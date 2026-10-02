@@ -44,7 +44,23 @@ the host). The full demo below was run through the containers on fresh volumes.
 - Resources come only from retrieved sources; in the Docker run they included the official CERT-In booklet.
 - Click **Cyber Safety Tips**: personalised warning signs, prevention, precautions, and resources restricted to retrieved sources.
 
-## 8. Engineering talking points
+## 8. Novelties (1.5 min)
+- **Check a suspicious message** (nav → *Check message / link*, "use sample"): each red flag is
+  highlighted in place with its category and explanation. Say clearly that these come from fixed rules,
+  not AI; the optional checkbox only lets the model reword explanations.
+- **Check a link** (tab *Link (URL)*, sample `https://hdfcbank.com.secure-login.top/verify`): registered
+  domain `secure-login.top`, "hdfc in the subdomain" (high), unusual TLD, phishing path word. Then try
+  `https://www.hdfcbank.com` (low, official) and an unfamiliar site such as `https://www.my-local-bakery.in`
+  (low, no indicators) to show that unfamiliar is not the same as malicious. The URL is never opened.
+- **Hindi**: on `/assistant`, set *Reply language* to हिन्दी and report a Hinglish incident, e.g.
+  > Mujhe WhatsApp par +91 98765 43210 se message aaya ki mera SBI account block ho jayega, link http://sbi-kyc-update.xyz/login par OTP daalo. Maine OTP daal diya aur Rs 15,000 kat gaye.
+
+  Guidance comes back in Hindi, while the phone number, link and amount stay exactly as typed and the
+  citations [S1]… still point to retrieved sources. The complaint draft stays in English with its
+  placeholders. On Groq's free tier this turn can take a couple of minutes (rate limits); if the model
+  is unavailable the fixed fallback reply is shown in Hindi.
+
+## 9. Engineering talking points
 - Pipeline split into services (`extraction → classification → retrieval → generation → persistence`), prompts in `services/ai/prompts/`.
 - Pydantic-validated structured outputs with one repair retry and safe fallbacks (tests feed malformed JSON).
 - Regex grounding removes hallucinated phone numbers/URLs/amounts.

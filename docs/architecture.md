@@ -40,6 +40,8 @@ FastAPI  /api/v1   ──►  ConversationOrchestrator
 | `services/complaint` | complaint draft |
 | `services/awareness` | awareness content |
 | `services/conversation` | intent detection + orchestrator |
+| `services/scamcheck` | rule-based red-flag detector (`red_flags.py`) and offline lookalike-URL analyser (`url_analyzer.py`); no AI, no network |
+| `services/language.py` | selected reply language (context variable) and the instruction appended to user-facing prompts |
 
 ## Request flow (chat message)
 
@@ -54,6 +56,14 @@ FastAPI  /api/v1   ──►  ConversationOrchestrator
 6. Generation: explanation + guidance + evidence checklist; complaint/awareness on demand.
 7. Follow-up questions derived from `missing_information` minus what is known.
 8. Persist incident, classification, assistant message; stream stage events.
+
+Novelty hooks (the stages above are unchanged):
+- The message's `language` is set at step 1; `generate_structured` appends a language instruction only for
+  user-facing tasks (`explanation`, `guidance`, `awareness`, `conversation`, `redflag_explain`). Intent,
+  extraction, classification and the complaint stay in English.
+- For `report_incident` / `check_message`, the rule-based red-flag detector runs on the raw message and
+  its report (with URL analyses of any links) is attached to the result as `red_flags`.
+- `/api/v1/check/message` and `/api/v1/check/url` expose the same detectors without the pipeline.
 
 ## Data model
 
@@ -77,7 +87,8 @@ PostgreSQL with pgvector is the application database. SQLite is used only by the
 |---|---|
 | Identifiers not literally present in the user's text are dropped; regex-found ones are added | `incident/extractor.py` |
 | URLs and helpline-style numbers absent from retrieved sources → `[official … — verify]` | `guidance/advisor.py` |
-| Advice to delete/erase/wipe evidence is removed (negated forms kept) | `guidance/safety.py` |
+| Advice to delete/erase/wipe evidence is removed (negated forms kept), in English and Hindi | `guidance/safety.py` |
+| LLM rewording of red-flag explanations: only for existing span indexes; text with numbers, links or evidence-deletion advice rejected | `scamcheck/red_flags.py` |
 | Citation ids filtered to retrieved ids; awareness links filtered to retrieved URLs; only http(s) links rendered | `guidance`, `awareness`, frontend |
 | Complaint narrative identifiers not provided by the user → placeholders | `complaint/generator.py` |
 | Query embedding model must match the model used to build the index | `rag/retriever.py` |

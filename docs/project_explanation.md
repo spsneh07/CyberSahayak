@@ -22,6 +22,20 @@ response guidance and evidence checklist, an editable complaint draft, and perso
 | Retrieval | Embeddings + pgvector | grounds answers in trusted documents |
 | Explanation / guidance / awareness | LLM with retrieved sources | personalised, plain-language |
 | Complaint | Template + LLM narrative only | formal structure must be reliable; facts never invented |
+| Red-flag highlighting | **No**: regular-expression rules (optional LLM rewording of explanations only) | every highlight must be real text from the message and explainable |
+| Lookalike-URL analysis | **No**: static rules on the URL text, no network access | reproducible, explainable, safe (the link is never opened) |
+| English / Hindi replies | LLM writes user-facing prose in the chosen language | structured fields, identifiers and the complaint stay language-independent |
+
+## Novelties
+1. **Red-flag highlighting** of pasted messages: rule-based; exact spans with category and explanation.
+2. **Lookalike-URL analyser**: rule-based and offline; explains structural warning signs without calling
+   a site malicious just because it is unfamiliar.
+3. **English / Hindi replies**: language selection that keeps citations, safety guards, provenance,
+   placeholders and identifiers intact.
+
+These were added after the evaluation below; none of the measured numbers cover them. Their tests check
+specific behaviours (exact spans, safe vs suspicious URLs, no network access, guards on Hindi output);
+they are not an accuracy measurement.
 
 ## Key GenAI concepts demonstrated
 - **Prompt engineering:** role + rules + task-specific instructions; inputs passed as JSON data blocks.

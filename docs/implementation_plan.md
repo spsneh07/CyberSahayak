@@ -68,3 +68,16 @@ crypto, data-breach and romance scams; rerun the evaluation with a larger, indep
 | Docker | `docker compose up -d --build` on fresh volumes: migrations, model download, ingestion in-container, full demo via the browser |
 | Retrieval | Re-measured without LLM: 17/19 hit@3, 11/19 hit@1 |
 | Security | No secrets/`.env`/official texts tracked; no user text or keys in container logs; KB URLs http(s) only; 0 injection-like lines in official texts |
+
+## Novelty modules (2026-10-02)
+
+Baseline tagged `v1.0-baseline` before any change. Added one at a time without changing the RAG, database
+or pipeline stages:
+
+| Module | Backend | Frontend | Tests |
+|---|---|---|---|
+| Lookalike-URL analyser (rule-based, offline) | `services/scamcheck/url_analyzer.py`, `POST /api/v1/check/url` | `/check?mode=url` | `tests/unit/test_url_analyzer.py` |
+| Red-flag highlighting (rule-based; LLM may only reword explanations) | `services/scamcheck/red_flags.py`, `POST /api/v1/check/message`, `red_flags` on chat results | `/check`, Analysis tab | `tests/unit/test_red_flags.py`, `tests/integration/test_scamcheck_api.py` |
+| English / Hindi replies | `services/language.py`, `language` on chat messages, Hindi evidence-deletion guard, localised fallback replies | reply-language selector | `tests/unit/test_language.py` |
+
+Tamil was left out for now. Not done: measuring the rules or the Hindi output against a labelled dataset.
