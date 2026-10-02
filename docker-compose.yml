@@ -5,7 +5,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-cyber}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
       POSTGRES_DB: ${POSTGRES_DB:-cyberassist}
-    ports: ["5432:5432"]
+    ports: ["${POSTGRES_PORT:-5432}:5432"]
     volumes: [pgdata:/var/lib/postgresql/data]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cyber}"]
@@ -13,12 +13,14 @@ services:
       retries: 10
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      args: {INSTALL_ML: "${INSTALL_ML:-false}"}
     env_file: .env
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-cyber}:${POSTGRES_PASSWORD:-change-me}@db:5432/${POSTGRES_DB:-cyberassist}
       KNOWLEDGE_BASE_DIR: /knowledge_base
-    volumes: ["./knowledge_base:/knowledge_base:ro"]
+    volumes: ["./knowledge_base:/knowledge_base:ro", "hfcache:/root/.cache/huggingface"]
     ports: ["8000:8000"]
     depends_on:
       db: {condition: service_healthy}
@@ -32,3 +34,4 @@ services:
 
 volumes:
   pgdata:
+  hfcache:

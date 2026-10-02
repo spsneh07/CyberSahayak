@@ -33,7 +33,7 @@ class KnowledgeRepository:
         return self.db.scalars(select(KnowledgeDocument).where(KnowledgeDocument.source_path == source_path)).first()
 
     def upsert_document(self, meta: dict[str, str | None], source_path: str, content_hash: str,
-                        chunks: list[tuple[str, list[float]]]) -> KnowledgeDocument:
+                        chunks: list[tuple[str, list[float]]], embedding_identity: str = "") -> KnowledgeDocument:
         doc = self.get_by_path(source_path)
         if doc is None:
             doc = KnowledgeDocument(source_path=source_path)
@@ -46,6 +46,8 @@ class KnowledgeRepository:
         doc.category = meta["category"] or "general"
         doc.published_date = meta.get("date")
         doc.document_type = meta.get("document_type") or "document"
+        doc.source_note = meta.get("source_note")
+        doc.embedding_identity = embedding_identity
         doc.content_hash = content_hash
         self.db.flush()
         for i, (text, emb) in enumerate(chunks):
@@ -62,6 +64,9 @@ class KnowledgeRepository:
                 removed += 1
         self.db.commit()
         return removed
+
+    def embedding_identities(self) -> set[str]:
+        return {i for i in self.db.scalars(select(KnowledgeDocument.embedding_identity).distinct()) if i}
 
     def count_chunks(self) -> int:
         return int(self.db.scalar(select(func.count()).select_from(KnowledgeChunk)) or 0)

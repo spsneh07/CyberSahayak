@@ -5,6 +5,7 @@ url: https://www.rbi.org.in
 category: phishing
 date:
 document_type: curated_summary
+source_note: Team-written summary of public guidance from the organisation above. Not the official text; verify details at the source URL.
 ---
 
 # Phishing: fake messages that steal your banking details

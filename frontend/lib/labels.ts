@@ -33,4 +33,7 @@ export const STAGES: { id: string; label: string }[] = [
   { id: "saving", label: "Saving" },
 ];
 
+/** Only http(s) links are rendered as anchors (blocks javascript:/data: URLs). */
+export const safeHref = (url: string): string | undefined => (/^https?:\/\//i.test(url) ? url : undefined);
+
 export const pct = (n: number) => `${Math.round(n * 100)}%`;

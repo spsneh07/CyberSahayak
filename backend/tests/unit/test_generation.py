@@ -69,3 +69,13 @@ def test_every_bracketed_gap_is_reported_as_placeholder(llm):
 def test_awareness_resources_deduplicated(llm):
     a = AwarenessGenerator(llm).generate(IncidentData(description="x"), CLS, SRC + [SRC[0].model_copy(update={"id": "S2"})])
     assert len({r.url for r in a.resources}) == len(a.resources)
+
+
+def test_guidance_and_awareness_drop_evidence_destruction(llm):
+    llm.queue["guidance"].append(json.dumps({"immediate_actions": ["Call your bank", "Delete the suspicious link from your device"],
+                                             "do_not": ["Do not delete the chats"]}))
+    g = Advisor(llm).guide(IncidentData(description="x"), CLS, SRC)
+    assert g.immediate_actions == ["Call your bank"] and g.do_not == ["Do not delete the chats"]
+    llm.queue["awareness"].append(json.dumps({"headline": "h", "prevention_tips": ["Delete the message after a screenshot", "Verify via official numbers"]}))
+    a = AwarenessGenerator(llm).generate(IncidentData(description="x"), CLS, SRC)
+    assert a.prevention_tips == ["Verify via official numbers"]

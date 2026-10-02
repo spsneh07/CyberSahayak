@@ -1,0 +1,4 @@
+# Optional: local semantic embeddings (EMBEDDING_PROVIDER=local).
+# Install CPU-only torch first to avoid a multi-GB CUDA build:
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+sentence-transformers>=3.0

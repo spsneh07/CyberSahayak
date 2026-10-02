@@ -48,12 +48,34 @@ backend/evaluation/ fictional dataset + eval runner
 frontend/          Next.js app            knowledge_base/  RAG documents
 ```
 
+## Runtime modes
+
+| Mode | LLM | Embeddings | Use |
+|---|---|---|---|
+| **Offline / mock** | `LLM_PROVIDER=mock` — keyword/regex heuristics, *not a language model*; UI shows "offline mock AI" | `hash` (lexical feature hashing) | tests, offline demo |
+| **Real LLM** | `LLM_PROVIDER=openai` (any OpenAI-compatible API, e.g. Groq) or `anthropic` | — | real extraction, classification, generation |
+| **Real embeddings** | — | `local` (sentence-transformers `all-MiniLM-L6-v2`, 384-d, runs on CPU) or `openai` | semantic retrieval |
+
+Validated configuration (2026-10-02): Groq `openai/gpt-oss-120b` + local `all-MiniLM-L6-v2` + PostgreSQL 16 / pgvector 0.8.7.
+
+## Requirements
+
+- **PostgreSQL with the pgvector extension** is required for the application database. The provided
+  `docker compose` service (`pgvector/pgvector:pg16`) includes it. A plain PostgreSQL install does **not**
+  include pgvector. SQLite is used only by the automated tests (vector search there is an exact
+  in-Python cosine fallback).
+- Python 3.12+ (3.13 tested), Node 20+, Docker Desktop.
+
 ## Setup
 
-Prerequisites: Python 3.12+, Node 20+, Docker (for PostgreSQL + pgvector).
+```bash
+cp .env.example .env
+```
+Edit `.env`: set `POSTGRES_PASSWORD` (and the same password in `DATABASE_URL`). If a local PostgreSQL already
+uses port 5432, set `POSTGRES_PORT=5433` and use `localhost:5433` in `DATABASE_URL`. For real mode set the
+`LLM_*` and `EMBEDDING_*` variables (see `.env.example`). Keys go only in `.env`, which is git-ignored.
 
 ```bash
-cp .env.example .env          # then edit: set POSTGRES_PASSWORD, and LLM_* if you have a key
 docker compose up -d db
 ```
 
@@ -62,11 +84,13 @@ Backend:
 ```bash
 cd backend
 python -m venv .venv
-.venv/Scripts/activate        # Windows (macOS/Linux: source .venv/bin/activate)
+.venv/Scripts/activate                      # macOS/Linux: source .venv/bin/activate
 pip install -r requirements-dev.txt
+pip install torch --index-url https://download.pytorch.org/whl/cpu   # only for EMBEDDING_PROVIDER=local
+pip install -r requirements-ml.txt                                   # only for EMBEDDING_PROVIDER=local
 alembic upgrade head
 python -m scripts.ingest_kb
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --port 8000
 ```
 
 Frontend:
@@ -74,59 +98,72 @@ Frontend:
 ```bash
 cd frontend
 npm install
-npm run dev                   # http://localhost:3000
+npm run dev                                 # http://localhost:3000
 ```
 
-Everything in Docker instead: `docker compose up --build`, then run ingestion once:
-`docker compose exec backend python -m scripts.ingest_kb`.
+Everything in Docker: `docker compose up --build` (set `INSTALL_ML=true` in `.env` for local embeddings),
+then once: `docker compose exec backend python -m scripts.ingest_kb`.
 
-No Docker? The backend also runs on SQLite for local development
-(`DATABASE_URL=sqlite:///./dev.db`); vector search then falls back to exact in-Python cosine similarity.
-Use PostgreSQL + pgvector for the real deployment.
+`GET /health` reports the database dialect, providers, number of indexed chunks and the embedding model
+the knowledge base was built with. If the configured embedding model differs from the one used at
+ingestion, retrieval refuses to run (`embedding_mismatch`) until you re-run ingestion.
 
 ## Environment variables
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `DATABASE_URL` | sqlite dev DB | `postgresql+psycopg://user:pass@host:5432/db` |
+| `DATABASE_URL` | sqlite dev DB | `postgresql+psycopg://user:pass@host:port/db` |
+| `POSTGRES_USER/PASSWORD/DB/PORT` | | Docker database; `POSTGRES_PORT` is the host port |
 | `LLM_PROVIDER` | `mock` | `mock` \| `openai` (any OpenAI-compatible) \| `anthropic` |
 | `LLM_MODEL`, `LLM_BASE_URL`, `LLM_API_KEY` | | model, endpoint, key |
 | `LLM_TEMPERATURE`, `LLM_TIMEOUT_SECONDS` | 0.2, 60 | |
-| `EMBEDDING_PROVIDER` | `hash` | `hash` (offline, lexical) \| `openai` |
+| `EMBEDDING_PROVIDER` | `hash` | `hash` \| `local` \| `openai` |
 | `EMBEDDING_MODEL`, `EMBEDDING_BASE_URL`, `EMBEDDING_API_KEY` | | |
-| `EMBEDDING_DIM` | 384 | must match the migration's vector column |
-| `RAG_TOP_K`, `RAG_MIN_SCORE` | 5, 0.05 | retrieval |
-| `CORS_ORIGINS` | `http://localhost:3000` | |
-| `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | frontend → backend |
+| `EMBEDDING_DIM` | 384 | must match the migration's `vector(384)` column |
+| `RAG_TOP_K`, `RAG_MIN_SCORE` | 5, 0.05 | use ~0.25 for semantic embeddings |
+| `INSTALL_ML` | false | Docker build: include sentence-transformers |
+| `CORS_ORIGINS`, `NEXT_PUBLIC_API_URL` | localhost | |
 
-Never commit `.env`. Logs redact keys, tokens, emails, UPI IDs, phone and long account numbers.
-
-**Mock mode:** with `LLM_PROVIDER=mock` the app works offline using transparent keyword/regex heuristics in
-`services/ai/providers/mock.py`. It exists for tests and offline demos, is labelled "offline mock AI" in the
-UI, and is not a language model. Use a real provider for meaningful results.
+Logs redact keys, tokens, emails, UPI IDs, phone and long account numbers. Provider errors are logged with
+status code and the provider's (redacted) message; clients only receive generic error messages.
 
 ## Testing
 
 ```bash
-cd backend && pytest            # 43 tests; no API key or Docker needed
-cd frontend && npm run typecheck && npm run build
+cd backend
+pytest                                         # unit + offline integration; Postgres/real tests are skipped with a reason
+TEST_DATABASE_URL=postgresql+psycopg://cyber:<pw>@localhost:5433/cyberassist_test pytest tests/postgres
+RUN_REAL_PROVIDER_TESTS=1 pytest tests/real_provider     # uses providers from .env, costs API quota
+cd ../frontend && npm run typecheck && npm run build
 ```
 
-Tests cover phishing, UPI fraud, banking fraud, social-media impersonation, job scam, ambiguous/unknown
-incidents, missing information and follow-ups, hallucinated-identifier removal, malformed/invalid LLM
-output (repair + fallback), RAG ingestion/retrieval/idempotency/prompt-injection stripping, complaint
-placeholders, awareness link filtering, log redaction, API validation errors and the SSE stream. Tests run
-the real Alembic migration on a temporary SQLite DB.
+| Folder | What | Needs |
+|---|---|---|
+| `tests/unit` | structured-output repair/fallback, extraction & classification scenarios, identifier grounding, complaint placeholders, guidance/awareness filters, evidence-destruction guard, log redaction | nothing |
+| `tests/integration` | Alembic migration on SQLite, KB ingestion, retrieval, dedupe, provenance, prompt-injection stripping, URL validation, re-embedding on model change, full API + SSE flow | nothing |
+| `tests/postgres` | pgvector extension, `vector(384)` column, HNSW index, stored vector norms, `<=>` search, embedding-mismatch guard, conversation persistence | PostgreSQL+pgvector test database (it is reset) |
+| `tests/real_provider` | semantic retrieval of a paraphrase; demo end to end with the real LLM: validated outputs, no invented facts, no unsupported URLs/helplines, no evidence-deletion advice, complaint identifiers | `.env` providers + `RUN_REAL_PROVIDER_TESTS=1` |
 
-**Evaluation:** `python -m evaluation.run_eval` runs the 20-case fictional dataset against the configured
-provider and writes `evaluation/results.json`. No accuracy figures are claimed in this repository — run it
-with your provider and report what you measure.
+Pytest prints every skipped test and why (`-rs`); skipped tests are not counted as passed.
+
+## Evaluation
+
+```bash
+python -m evaluation.run_eval --mode real      # configured LLM + embeddings → evaluation/results_real.json
+python -m evaluation.run_eval --mode offline   # mock LLM; pipeline check only
+```
+
+See [docs/project_explanation.md](docs/project_explanation.md#evaluation) for the method, dataset and the
+measured results. The offline mode's keyword rules were written together with the dataset, so its scores
+are **not** model accuracy.
 
 ## RAG ingestion
 
 Add `.md`/`.txt` files with front-matter (or `.pdf` + `.meta.json`) to `knowledge_base/documents/` and run
-`python -m scripts.ingest_kb`. See [knowledge_base/README.md](knowledge_base/README.md) — the seed
-documents are team-written summaries linked to official sources; verify before relying on them.
+`python -m scripts.ingest_kb`. Required metadata: `title, organization, url (http/https), category,
+document_type, source_note`. The seed documents are **team-written summaries** of public guidance,
+labelled `curated_summary` with a provenance note shown in the UI; they are not official texts. See
+[knowledge_base/README.md](knowledge_base/README.md) and [docs/rag.md](docs/rag.md).
 
 ## API
 
@@ -145,9 +182,13 @@ documents are team-written summaries linked to official sources; verify before r
 Interactive docs at http://localhost:8000/docs. Errors share one shape: `{"error": {"code", "message", "details"}}`.
 
 ## Limitations
-- Seed knowledge base is small and consists of curated summaries, not official full texts.
-- Default `hash` embeddings are lexical, not semantic; use an embedding API for better retrieval.
-- Mock mode is heuristic; quality depends on the configured LLM.
+- Seed knowledge base is small (10 documents, 21 chunks) and consists of team-written summaries, not official full texts.
+- Several categories (romance, crypto, identity theft, data breach) have no dedicated KB document.
+- `hash` embeddings are lexical; use `local` or `openai` for semantic retrieval.
+- Mock mode is heuristic and not a language model.
+- One analysed message makes ~5–6 LLM calls. On Groq's free tier, rate limits (HTTP 429, retried with
+  backoff) made turns take roughly 1–2 minutes during validation.
+- Output guards are rule-based (URL/helpline scrubbing, evidence-deletion filter) and can miss paraphrases.
 - No authentication; conversations are anonymous by ID. Do not deploy publicly as-is.
 - Complainant details entered for a draft are stored in the draft text.
 - English only; India-focused guidance.

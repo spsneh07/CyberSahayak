@@ -11,6 +11,7 @@ knowledge_base/documents/*.md|.txt|.pdf
   → embed (EMBEDDING_PROVIDER)                          services/ai/providers/*
   → store knowledge_documents + knowledge_chunks(vector) repositories/knowledge.py
   → query: embed → cosine search (pgvector `<=>`, HNSW)  services/rag/retriever.py
+  → collapse to one citation per document (extra chunks of the same document are appended)
   → citations [S1..Sn] → prompts inside <sources> tags
 ```
 
@@ -22,17 +23,25 @@ cd backend && python -m scripts.ingest_kb
 
 ## Metadata stored
 
-`title, organization, url, category, published_date, document_type, source_path, content_hash`.
-Every citation shown in the UI carries title, organisation, URL, document type and similarity score.
+`title, organization, url (http/https only), category, published_date, document_type, source_note,
+source_path, content_hash, embedding_identity`. `document_type` + `source_note` are required at ingestion
+so every document states what it is. Every citation shown in the UI carries title, organisation, URL,
+document type, provenance note and similarity score.
 
 ## Embeddings
 
-| Provider | Quality | Needs |
+| Provider | Kind | Needs |
 |---|---|---|
-| `hash` (default) | Lexical: feature-hashed words + bigrams, 384-d, L2-normalised. Real vectors, real cosine search — but no semantic understanding. | nothing |
-| `openai` | Semantic (`text-embedding-3-small` with `dimensions=384`) — any OpenAI-compatible `/embeddings` endpoint. | API key |
+| `hash` | Lexical: feature-hashed words + bigrams, 384-d, L2-normalised. Real vectors and real cosine search, but **no semantic understanding**. | nothing |
+| `local` | **Semantic**: sentence-transformers `all-MiniLM-L6-v2` (384-d, normalised), CPU | `requirements-ml.txt` (~1 GB with CPU torch), model download ~90 MB on first use |
+| `openai` | Semantic: any OpenAI-compatible `/embeddings` endpoint with `dimensions=384` | API key |
 
-`EMBEDDING_DIM` must match the `vector(N)` column created by migration `0001`. Changing it requires a new migration and re-ingestion.
+`EMBEDDING_DIM` must match the `vector(384)` column (migration `0001`).
+
+**Consistency guard.** Each document stores the `embedding_identity` (`provider:model:dim`) used for its
+vectors, and that identity is part of the ingestion content hash. Switching provider/model therefore
+re-embeds every document on the next ingestion, and a query made with a different model than the index is
+refused with `embedding_mismatch` instead of silently returning meaningless matches.
 
 ## Retrieval for an incident
 
@@ -52,3 +61,27 @@ instead of inventing them. Hits below `RAG_MIN_SCORE` are dropped.
 Seed documents are **curated summaries written by the project team** (labelled `curated_summary`), each linked
 to the official organisation page. They are not verbatim official texts. Verify details at the linked source
 and prefer adding the original official documents. See `knowledge_base/README.md`.
+
+## Validation on PostgreSQL + pgvector (2026-10-02)
+
+Setup: `pgvector/pgvector:pg16` (pgvector 0.8.7), `vector(384)` + HNSW cosine index, 10 documents → 21
+chunks, embeddings `local:sentence-transformers/all-MiniLM-L6-v2:384` (all stored vectors have norm 1.0).
+Top-3 documents per query (cosine similarity):
+
+| Query | S1 | S2 | S3 |
+|---|---|---|---|
+| bank message, click link, share OTP, account blocked | **phishing** 0.594 | upi_fraud 0.480 | banking_fraud 0.442 |
+| buyer QR code, enter UPI PIN to receive, money deducted | **upi_fraud** 0.725 | shopping_fraud 0.493 | banking_fraud 0.355 |
+| money debited via card transaction I never made | phishing 0.399 | **banking_fraud** 0.397 | upi_fraud 0.390 |
+| is `sbi-kyc-update.xyz/login` safe, asks net-banking password | **phishing** 0.468 | upi_fraud 0.412 | banking_fraud 0.398 |
+| fake Instagram profile with my photos asking friends for money | **social_media_impersonation** 0.683 | shopping_fraud 0.425 | phishing 0.394 |
+
+Observations: the most relevant document is first in 4/5 queries and second (0.002 behind) for the
+banking query. The fake-website guidance (inside the shopping document) is not retrieved for the
+suspicious-URL query. Before the per-document collapse, the same document appeared up to twice in the
+top 3; it now appears once. The dataset-level retrieval metric is in `docs/project_explanation.md`.
+
+With the real LLM on the demo message, the explanation cited `[S1]` and the chat reply referred to S1 and
+S6 — all ids that were actually retrieved — and the guidance's
+reporting channels (1930 helpline, cybercrime.gov.in, RBI three-working-day reporting) all occur in the
+retrieved excerpts (NCRP and RBI summaries).

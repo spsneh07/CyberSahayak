@@ -14,7 +14,7 @@ from app.services.rag.sanitize import clean_text, strip_injections
 
 log = logging.getLogger(__name__)
 
-REQUIRED_META = ("title", "organization", "url", "category")
+REQUIRED_META = ("title", "organization", "url", "category", "document_type", "source_note")
 SUPPORTED = {".md", ".txt", ".pdf"}
 
 
@@ -82,10 +82,15 @@ class Ingestor:
         missing = [k for k in REQUIRED_META if not meta.get(k)]
         if missing:
             raise ValueError(f"missing metadata {missing}")
+        if not str(meta["url"]).lower().startswith(("https://", "http://")):
+            raise ValueError("url must be an http(s) URL")
         text, removed = strip_injections(clean_text(raw))
         if removed:
             log.warning("removed %d instruction-like lines from %s", removed, rel)
-        digest = hashlib.sha256((json.dumps(meta, sort_keys=True) + text).encode()).hexdigest()
+        # Embedding identity is part of the hash so switching provider/model re-embeds everything.
+        digest = hashlib.sha256(
+            (self.embeddings.identity + json.dumps(meta, sort_keys=True) + text).encode()
+        ).hexdigest()
         existing = self.repo.get_by_path(rel)
         if existing and existing.content_hash == digest:
             return "unchanged", 0, removed
@@ -93,5 +98,5 @@ class Ingestor:
         if not chunks:
             raise ValueError("no text content")
         vectors = self.embeddings.embed(chunks)
-        self.repo.upsert_document(meta, rel, digest, list(zip(chunks, vectors)))
+        self.repo.upsert_document(meta, rel, digest, list(zip(chunks, vectors)), self.embeddings.identity)
         return ("updated" if existing else "added"), len(chunks), removed

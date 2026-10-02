@@ -47,6 +47,7 @@ export interface Citation {
   category: string;
   document_type: string;
   published_date: string | null;
+  source_note: string | null;
   score: number;
   excerpt: string;
 }

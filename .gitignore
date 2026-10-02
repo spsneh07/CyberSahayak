@@ -11,3 +11,4 @@ frontend/next-env.d.ts
 *.log
 backend/evaluation/results.json
 .claude/
+*.tsbuildinfo

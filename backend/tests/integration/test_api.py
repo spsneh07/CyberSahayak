@@ -26,6 +26,7 @@ def test_demo_flow_end_to_end(client):
     assert res["guidance"]["immediate_actions"] and res["guidance"]["evidence_checklist"]
     assert res["follow_up_questions"]
     assert res["stages"][:5] == ["analyzing", "extracting", "classifying", "retrieving", "generating"]
+    assert len(res["stages"]) == len(set(res["stages"]))  # each stage reported once
     assert res["provider"] == "mock"
 
     # Follow-up details merge into the same incident.

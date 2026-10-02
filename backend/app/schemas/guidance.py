@@ -11,6 +11,7 @@ class Citation(BaseModel):
     category: str
     document_type: str
     published_date: str | None = None
+    source_note: str | None = None
     score: float
     excerpt: str
 

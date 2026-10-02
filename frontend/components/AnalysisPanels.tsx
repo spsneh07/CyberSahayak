@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { safeHref } from "@/lib/labels";
 import type { Awareness, Citation, EvidenceItem, Explanation, Guidance } from "@/lib/types";
 
 function List({ items, tone = "signal", ordered = false }: { items: string[]; tone?: "signal" | "danger" | "safe"; ordered?: boolean }) {
@@ -126,15 +127,18 @@ export function SourcesPanel({ sources }: { sources: Citation[] }) {
               </summary>
               <p className="mt-2 whitespace-pre-line text-xs text-slate-300">{s.excerpt}</p>
             </details>
-            {s.url && (
-              <a href={s.url} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block break-all text-xs text-signal underline-offset-2 hover:underline">
+            {s.source_note && <p className="mt-1 text-[11px] italic text-warn/90">{s.source_note}</p>}
+            {safeHref(s.url) && (
+              <a href={safeHref(s.url)} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block break-all text-xs text-signal underline-offset-2 hover:underline">
                 {s.url}
               </a>
             )}
           </li>
         ))}
       </ul>
-      <p className="mt-3 text-xs text-slate-500">Curated summaries — verify details at the official link.</p>
+      <p className="mt-3 text-xs text-slate-500">
+        Sources are retrieved from this project&apos;s knowledge base. Verify details at the official link before acting.
+      </p>
     </section>
   );
 }
@@ -152,7 +156,7 @@ export function AwarenessPanel({ awareness }: { awareness: Awareness }) {
           <div>
             <h3 className="mb-1 text-sm font-semibold text-white">Trusted resources</h3>
             <ul className="space-y-1 text-sm">
-              {awareness.resources.map((r) => (
+              {awareness.resources.filter((r) => safeHref(r.url)).map((r) => (
                 <li key={r.url}><a className="text-signal hover:underline" href={r.url} target="_blank" rel="noopener noreferrer">{r.title}</a> <span className="text-xs text-slate-500">{r.organization}</span></li>
               ))}
             </ul>

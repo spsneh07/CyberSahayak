@@ -29,12 +29,16 @@ def build_embeddings(settings: Settings) -> EmbeddingProvider:
         from app.services.ai.providers.hash_embeddings import HashEmbeddings
 
         return HashEmbeddings(settings.embedding_dim)
+    if provider == "local":
+        from app.services.ai.providers.local_embeddings import LocalSentenceEmbeddings
+
+        return LocalSentenceEmbeddings(settings.embedding_model, settings.embedding_dim)
     if provider == "openai":
         from app.services.ai.providers.openai_compat import OpenAICompatibleEmbeddings
 
         return OpenAICompatibleEmbeddings(settings.embedding_base_url, settings.embedding_api_key,
                                           settings.embedding_model, settings.embedding_dim)
-    raise ValueError(f"Unsupported EMBEDDING_PROVIDER={settings.embedding_provider!r} (use hash|openai)")
+    raise ValueError(f"Unsupported EMBEDDING_PROVIDER={settings.embedding_provider!r} (use hash|local|openai)")
 
 
 @lru_cache

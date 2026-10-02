@@ -10,6 +10,7 @@ from app.services.ai.prompts import explanation as explanation_prompt
 from app.services.ai.prompts import guidance as guidance_prompt
 from app.services.ai.structured import generate_structured
 from app.services.classification.taxonomy import CATEGORY_BY_ID
+from app.services.guidance.safety import drop_evidence_destruction
 
 log = logging.getLogger(__name__)
 
@@ -77,7 +78,8 @@ class Advisor:
                 reporting_guidance=["Report the incident through the official national cybercrime reporting channel or your local police station."],
             )
         for field in ("immediate_actions", "security_steps", "reporting_guidance", "do_not"):
-            setattr(g, field, [scrub_unsupported(x, sources) for x in getattr(g, field)])
+            items = [scrub_unsupported(x, sources) for x in getattr(g, field)]
+            setattr(g, field, items if field == "do_not" else drop_evidence_destruction(items))
         g.source_ids = [i for i in g.source_ids if i in {s.id for s in sources}]
         g.evidence_checklist = self.evidence_checklist(incident, g.evidence_checklist)
         return g

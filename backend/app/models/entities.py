@@ -125,6 +125,8 @@ class KnowledgeDocument(TimestampMixin, Base):
     category: Mapped[str] = mapped_column(String(60), index=True)
     published_date: Mapped[str | None] = mapped_column(String(40))
     document_type: Mapped[str] = mapped_column(String(60))
+    source_note: Mapped[str | None] = mapped_column(Text)  # provenance, e.g. "team-written summary of ..."
+    embedding_identity: Mapped[str | None] = mapped_column(String(200))
     source_path: Mapped[str] = mapped_column(String(500), unique=True)
     content_hash: Mapped[str] = mapped_column(String(64))
     chunks: Mapped[list["KnowledgeChunk"]] = relationship(

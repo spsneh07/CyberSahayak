@@ -11,6 +11,7 @@ from app.schemas.guidance import Citation
 from app.services.ai.base import LLMError, StructuredOutputError
 from app.services.ai.prompts import conversation as prompt
 from app.services.ai.structured import generate_structured
+from app.services.guidance.safety import scrub_reply
 from app.services.incident.extractor import follow_up_questions
 from app.services.pipeline import Pipeline, StageCallback, _noop
 
@@ -38,6 +39,8 @@ class Orchestrator:
         stages = ["analyzing"]
 
         def track(stage: str) -> None:
+            if stage in stages:  # each stage is reported once, in order
+                return
             stages.append(stage)
             emit(stage)
 
@@ -86,7 +89,7 @@ class Orchestrator:
 
         if not result.reply:
             track("generating")
-            result.reply = self._reply(msg.content, result)
+            result.reply = scrub_reply(self._reply(msg.content, result))
 
         track("saving")
         result.stages = stages

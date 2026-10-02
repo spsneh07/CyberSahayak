@@ -25,5 +25,10 @@ class EmbeddingProvider(ABC):
     name: str = "base"
     dim: int
 
+    @property
+    def identity(self) -> str:
+        """Changes whenever stored vectors would no longer be comparable (provider/model/dimension)."""
+        return f"{self.name}:{getattr(self, 'model_name', '')}:{self.dim}"
+
     @abstractmethod
     def embed(self, texts: list[str]) -> list[list[float]]: ...

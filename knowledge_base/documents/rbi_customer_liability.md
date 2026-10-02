@@ -5,6 +5,7 @@ url: https://www.rbi.org.in
 category: banking_fraud
 date: 2017-07-06
 document_type: curated_summary
+source_note: Team-written summary of public guidance from the organisation above. Not the official text; verify details at the source URL.
 ---
 
 # Unauthorised electronic banking transactions — what customers should know

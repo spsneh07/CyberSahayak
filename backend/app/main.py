@@ -50,4 +50,5 @@ def health(db: Session = Depends(get_db)) -> dict:
         "llm_provider": settings.llm_provider,
         "embedding_provider": settings.embedding_provider,
         "knowledge_chunks": KnowledgeRepository(db).count_chunks(),
+        "knowledge_embedding": sorted(KnowledgeRepository(db).embedding_identities()),
     }
