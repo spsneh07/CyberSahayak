@@ -87,7 +87,7 @@ Backend:
 ```bash
 cd backend
 python -m venv .venv
-.venv\Scriptsctivate                      # Windows; macOS/Linux/Git Bash: source .venv/bin/activate (Git Bash: .venv/Scripts/activate)
+.venv\Scripts\activate                      # Windows; macOS/Linux/Git Bash: source .venv/bin/activate (Git Bash: .venv/Scripts/activate)
 pip install -r requirements-dev.txt
 pip install torch --index-url https://download.pytorch.org/whl/cpu   # only for EMBEDDING_PROVIDER=local
 pip install -r requirements-ml.txt                                   # only for EMBEDDING_PROVIDER=local
