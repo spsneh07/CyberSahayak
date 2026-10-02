@@ -87,7 +87,7 @@ Backend:
 ```bash
 cd backend
 python -m venv .venv
-.venv/Scripts/activate                      # macOS/Linux: source .venv/bin/activate
+.venv\Scriptsctivate                      # Windows; macOS/Linux/Git Bash: source .venv/bin/activate (Git Bash: .venv/Scripts/activate)
 pip install -r requirements-dev.txt
 pip install torch --index-url https://download.pytorch.org/whl/cpu   # only for EMBEDDING_PROVIDER=local
 pip install -r requirements-ml.txt                                   # only for EMBEDDING_PROVIDER=local
@@ -100,7 +100,7 @@ uvicorn app.main:app --port 8000
 Frontend:
 
 ```bash
-cd frontend
+cd ../frontend                              # from backend/
 npm install
 npm run dev                                 # http://localhost:3000
 ```
