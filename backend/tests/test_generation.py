@@ -57,3 +57,15 @@ def test_awareness_resources_only_from_sources(llm):
         "headline": "h", "resources": [{"title": "Fake", "url": "https://invented.example"}]}))
     a = AwarenessGenerator(llm).generate(IncidentData(description="x"), CLS, SRC)
     assert [r.url for r in a.resources] == ["https://cybercrime.gov.in"]
+
+
+def test_every_bracketed_gap_is_reported_as_placeholder(llm):
+    _, body, placeholders = ComplaintGenerator(llm).generate(IncidentData(description="scam"), CLS)
+    import re
+
+    assert set(re.findall(r"\[[^\]]+\]", body)) == set(placeholders)
+
+
+def test_awareness_resources_deduplicated(llm):
+    a = AwarenessGenerator(llm).generate(IncidentData(description="x"), CLS, SRC + [SRC[0].model_copy(update={"id": "S2"})])
+    assert len({r.url for r in a.resources}) == len(a.resources)

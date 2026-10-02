@@ -20,7 +20,10 @@ class AwarenessGenerator:
             content = Awareness(headline=f"Staying safe from {label(cls.category) if cls else 'online scams'}")
         # Resources must come from retrieved sources — drop any invented link, then fill from sources.
         allowed = {s.url: s for s in sources if s.url}
-        resources = [r for r in content.resources if r.url in allowed]
+        resources: list[Resource] = []
+        for r in content.resources:
+            if r.url in allowed and all(x.url != r.url for x in resources):
+                resources.append(r)
         for url, s in allowed.items():
             if all(r.url != url for r in resources):
                 resources.append(Resource(title=s.title, organization=s.organization, url=url))

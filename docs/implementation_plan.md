@@ -35,3 +35,17 @@
 
 ## Out of scope (until core works)
 Authentication, multi-tenant users, Kubernetes, microservices, file uploads of evidence.
+
+## Status (2026-10-02)
+
+| Phase | Status | Verification |
+|---|---|---|
+| 0 | Done | docs written |
+| 1 | Done | compose/Dockerfiles written; `/health` OK on SQLite; **PostgreSQL+pgvector path not yet run** (Docker daemon unavailable on the dev machine) |
+| 2 | Done | Alembic migration runs in every test session |
+| 3–8 | Done | 43 pytest tests passing (mock LLM, hash embeddings) |
+| 9 | Done | `tsc --noEmit` + `next build` pass; demo flow exercised in the browser against the live backend |
+| 10 | Done | eval dataset + runner, docs, demo script |
+
+Open items: run `docker compose up` and the test suite against PostgreSQL+pgvector; run the evaluation
+with a real LLM provider and record results; replace curated summaries with official documents.

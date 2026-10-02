@@ -11,7 +11,7 @@ from app.services.ai.structured import generate_structured
 from app.services.classification.taxonomy import label
 from app.services.incident.identifiers import extract_identifiers, normalize
 
-PLACEHOLDER_RE = re.compile(r"\[[A-Z][A-Z0-9 /'’&-]{1,40}\]")
+PLACEHOLDER_RE = re.compile(r"\[[A-Z][A-Z0-9 /'’&,.-]{1,80}\]")
 
 DECLARATION = (
     "I hereby declare that the information given above is true and correct to the best of my "
@@ -68,8 +68,8 @@ class ComplaintGenerator:
             loss = "[AMOUNT LOST, IF ANY]"
 
         subject = f"Complaint regarding {category} incident" + (f" via {incident.platform}" if incident.platform else "")
-        evidence = "\n".join(f"  {i}. {e}" for i, e in enumerate(incident.evidence_available, 1)) or "  1. [LIST EVIDENCE — e.g. screenshots, SMS, bank statement]"
-        actions = "\n".join(f"  - {a}" for a in incident.actions_taken) or "  - [ACTIONS ALREADY TAKEN, e.g. informed bank on DATE, reference no.]"
+        evidence = "\n".join(f"  {i}. {e}" for i, e in enumerate(incident.evidence_available, 1)) or "  1. [LIST OF EVIDENCE, E.G. SCREENSHOTS, SMS, BANK STATEMENT]"
+        actions = "\n".join(f"  - {a}" for a in incident.actions_taken) or "  - [ACTIONS ALREADY TAKEN, E.G. BANK INFORMED ON DATE, REFERENCE NO.]"
         req = "\n".join(f"  {i}. {r}" for i, r in enumerate(requests, 1))
 
         body = f"""To,

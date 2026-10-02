@@ -51,9 +51,14 @@ def _sources(user: str) -> list[dict[str, str]]:
     return [dict(zip(("id", "title", "organization", "url", "text"), g)) for g in _SOURCE_RE.findall(user)]
 
 
+def _has(keyword: str, text: str) -> bool:
+    """Word-boundary prefix match ('impersonat' matches 'impersonating'; 'rang' does not match 'strange')."""
+    return re.search(rf"(?<![a-z0-9]){re.escape(keyword)}", text) is not None
+
+
 def _scores(text: str) -> list[tuple[str, int]]:
     t = text.lower()
-    scores = [(c.id, sum(1 for k in c.keywords if k in t)) for c in CATEGORIES if c.id != "unknown"]
+    scores = [(c.id, sum(1 for k in c.keywords if _has(k, t))) for c in CATEGORIES if c.id != "unknown"]
     # Combination rules mirroring common definitions.
     boost = {"phishing": 2 if ("link" in t or "http" in t or "www." in t) and ("bank" in t or "otp" in t or "kyc" in t) else 0}
     if "whatsapp" in t or "sms" in t or "message" in t:
@@ -166,7 +171,7 @@ class MockLLM(LLMProvider):
                     "reasoning": "The description does not contain enough specific details to determine the type.",
                     "alternatives": [{"category": c, "confidence": 0.1} for c, s in ranked[:2] if s > 0]}
         conf = round(min(0.9, 0.4 + 0.1 * score), 2)
-        hits = [k for k in CATEGORY_BY_ID[top].keywords if k in text.lower()][:4]
+        hits = [k for k in CATEGORY_BY_ID[top].keywords if _has(k, text.lower())][:4]
         return {
             "category": top,
             "subtype": f"{label(top)} via {inc['platform']}" if inc.get("platform") else None,
@@ -199,7 +204,9 @@ class MockLLM(LLMProvider):
         if inc.get("urls") or "link" in d:
             actions.append("Do not open the link again or enter any more details on that page.")
         actions.append("Stop all communication with the suspected fraudster and do not send money to 'recover' losses.")
-        reporting = [re.sub(r"\s+", " ", sent).strip() for s in src for sent in re.split(r"(?<=[.!?])\s+", s["text"])
+        reporting = [re.sub(r"\s+", " ", sent).strip(" -*")
+                     for s in src for line in s["text"].split("\n")[1:]  # skip the chunk's heading line
+                     for sent in re.split(r"(?<=[.!?])\s+", line)
                      if re.search(r"report|complain|helpline", sent, re.I)][:3]
         evidence = [{"item": "Screenshots of the messages/chats with visible date, time and sender", "why": "Shows how the fraud was carried out", "priority": "high"}]
         if inc.get("phone_numbers"):
