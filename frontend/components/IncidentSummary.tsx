@@ -8,13 +8,14 @@ const SOURCE_BADGE: Record<FactSource, { label: string; cls: string }> = {
 };
 
 function Row({ label, value, source }: { label: string; value: string | null; source?: FactSource }) {
-  const badge = value ? SOURCE_BADGE[source ?? "user_provided"] : SOURCE_BADGE.unknown;
+  // A present value never gets the "unknown" badge; show no badge if its provenance wasn't recorded.
+  const badge = !value ? SOURCE_BADGE.unknown : source && source !== "unknown" ? SOURCE_BADGE[source] : null;
   return (
     <div className="flex items-baseline justify-between gap-3 border-b border-ink-700/60 py-1.5 last:border-0">
       <dt className="text-sm text-slate-400">{label}</dt>
       <dd className="text-right text-sm">
         <span className={value ? "text-white" : "italic text-slate-500"}>{value ?? "Not provided"}</span>
-        <span className={`ml-2 font-mono text-[10px] uppercase ${badge.cls}`}>{badge.label}</span>
+        {badge && <span className={`ml-2 font-mono text-[10px] uppercase ${badge.cls}`}>{badge.label}</span>}
       </dd>
     </div>
   );
@@ -63,7 +64,7 @@ export function IncidentSummary({ incident, classification }: { incident: Incide
       <dl className="mt-3">
         <Row label="Platform" value={incident.platform} source={fs.platform} />
         <Row label="Date / time" value={incident.date_time} source={fs.date_time} />
-        <Row label="Financial loss" value={loss} source={fs.amount ?? fs.financial_loss} />
+        <Row label="Financial loss" value={loss} source={incident.amount != null ? fs.amount : fs.financial_loss} />
         <Row label="Evidence" value={incident.evidence_available.join(", ") || null} source={fs.evidence_available} />
         <Row label="Suspect identifiers" value={identifiers.join(", ") || null} />
         {incident.account_identifiers.length > 0 && <Row label="Transaction / account IDs" value={incident.account_identifiers.join(", ")} />}

@@ -4,7 +4,7 @@
 `python -m scripts.ingest_kb`, start backend and frontend (see README). Check http://localhost:8000/health
 shows `"database": "postgresql"` and the expected `knowledge_embedding`.
 
-Real mode (validated): Groq `openai/gpt-oss-120b` + local `all-MiniLM-L6-v2`. **Timing:** each analysed
+Real mode (validated): Groq `openai/gpt-oss-120b` or `openai/gpt-oss-20b` + local `all-MiniLM-L6-v2` (the web-UI run used 20b; each analysed turn took about a minute). **Timing:** each analysed
 message makes ~5–6 LLM calls; on Groq's free tier, rate limiting made turns take ~1–2 minutes during
 validation (stage bar keeps moving; backend retries 429s). For a live presentation, run the demo once
 beforehand, consider a paid/higher-limit key, or fall back to offline mock mode (`LLM_PROVIDER=mock`,

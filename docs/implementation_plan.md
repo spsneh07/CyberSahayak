@@ -36,16 +36,25 @@
 ## Out of scope (until core works)
 Authentication, multi-tenant users, Kubernetes, microservices, file uploads of evidence.
 
-## Status (2026-10-02)
+## Status (2026-10-02, production-integration validation)
 
-| Phase | Status | Verification |
+| Area | Status | Evidence |
 |---|---|---|
-| 0 | Done | docs written |
-| 1 | Done | compose/Dockerfiles written; `/health` OK on SQLite; **PostgreSQL+pgvector path not yet run** (Docker daemon unavailable on the dev machine) |
-| 2 | Done | Alembic migration runs in every test session |
-| 3–8 | Done | 43 pytest tests passing (mock LLM, hash embeddings) |
-| 9 | Done | `tsc --noEmit` + `next build` pass; demo flow exercised in the browser against the live backend |
-| 10 | Done | eval dataset + runner, docs, demo script |
+| PostgreSQL | Verified | `pgvector/pgvector:pg16` container (PostgreSQL 16.15), host port 5433; Alembic `0001`+`0002` applied |
+| pgvector | Verified | extension 0.8.7; `knowledge_chunks.embedding vector(384)`; HNSW `vector_cosine_ops` index; `<=>` search; `tests/postgres` 5/5 |
+| Semantic embeddings | Verified | local `all-MiniLM-L6-v2`; 10 docs → 21 chunks re-embedded; all norms 1.0; paraphrase test passes |
+| Real LLM | Verified | Groq `openai/gpt-oss-120b` (script demo + evaluation) and `openai/gpt-oss-20b` (real-provider tests + web UI demo) |
+| RAG | Verified with known misses | 5 manual queries + hit@3 15/18 on the eval set (see `docs/rag.md`) |
+| End-to-end demo | Verified in the web UI | extraction, classification, retrieval, explanation, guidance, evidence, complaint, awareness, follow-up |
+| Evaluation | Measured | `docs/project_explanation.md#evaluation` |
+| Docker | Verified build | backend (with `INSTALL_ML=true`, 3.62 GB) and frontend (303 MB) images build; backend image imports app + sentence-transformers |
 
-Open items: run `docker compose up` and the test suite against PostgreSQL+pgvector; run the evaluation
-with a real LLM provider and record results; replace curated summaries with official documents.
+Bugs found and fixed during validation: duplicate retrieval of the same document; stale vectors after
+switching embedding model (now re-embedded and mismatched queries refused); stage events emitted twice;
+evidence-deletion advice from the real LLM (deterministic filter); complaint narrative replacing a stated
+date with a placeholder (prompt); provider errors not diagnosable (status + message now logged); no
+429 handling (bounded backoff); non-http source URLs renderable as links; financial-loss row showing an
+"unknown" badge next to a known value (UI).
+
+Open items: replace curated summaries with original official documents; add KB coverage for smishing,
+crypto, data-breach and romance scams; rerun the evaluation with a larger, independently labelled dataset.

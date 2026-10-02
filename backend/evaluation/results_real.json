@@ -1,0 +1,552 @@
+{
+  "summary": {
+    "mode": "real",
+    "run_at": "2026-10-02T12:38:16.576143+00:00",
+    "llm": "openai:openai/gpt-oss-120b",
+    "embeddings": "local:sentence-transformers/all-MiniLM-L6-v2:384",
+    "cases": 20,
+    "classification_exact": "20/20",
+    "classification_acceptable": "20/20",
+    "identifier_fields_correct": "10/10",
+    "retrieval_hit_at_3": "15/18 (cases with a relevant KB document)",
+    "guidance_outputs_with_unsupported_contacts": "1/19 (raw model output, before scrubbing)",
+    "guidance_outputs_with_invalid_source_ids": "0/19",
+    "guidance_outputs_advising_evidence_deletion": "2/19 (raw, before safety filter)",
+    "complaints_with_all_provided_facts": "19/19",
+    "complaints_with_invented_identifiers": "0/19",
+    "elapsed_seconds": 993.1,
+    "note": "Small fictional dataset (20 cases); indicates behaviour, not real-world accuracy."
+  },
+  "rows": [
+    {
+      "id": "e01",
+      "expected": "phishing",
+      "predicted": "phishing",
+      "confidence": 0.92,
+      "correct": true,
+      "acceptable": true,
+      "extraction_warnings": [],
+      "identifiers": {},
+      "retrieved": [
+        "phishing",
+        "upi_fraud",
+        "banking_fraud"
+      ],
+      "retrieval_hit_at_3": true,
+      "grounding": {
+        "unsupported_mentions": [],
+        "invalid_source_ids": [],
+        "evidence_destruction_advice": []
+      },
+      "complaint": {
+        "facts_provided": 1,
+        "facts_missing": [],
+        "invented_identifiers": []
+      }
+    },
+    {
+      "id": "e02",
+      "expected": "smishing",
+      "predicted": "smishing",
+      "confidence": 0.96,
+      "correct": true,
+      "acceptable": true,
+      "extraction_warnings": [],
+      "identifiers": {
+        "urls": true
+      },
+      "retrieved": [
+        "banking_fraud",
+        "vishing",
+        "reporting"
+      ],
+      "retrieval_hit_at_3": false,
+      "grounding": {
+        "unsupported_mentions": [],
+        "invalid_source_ids": [],
+        "evidence_destruction_advice": []
+      },
+      "complaint": {
+        "facts_provided": 2,
+        "facts_missing": [],
+        "invented_identifiers": []
+      }
+    },
+    {
+      "id": "e03",
+      "expected": "vishing",
+      "predicted": "vishing",
+      "confidence": 0.95,
+      "correct": true,
+      "acceptable": true,
+      "extraction_warnings": [],
+      "identifiers": {
+        "amount": true
+      },
+      "retrieved": [
+        "phishing",
+        "banking_fraud",
+        "upi_fraud"
+      ],
+      "retrieval_hit_at_3": true,
+      "grounding": {
+        "unsupported_mentions": [],
+        "invalid_source_ids": [],
+        "evidence_destruction_advice": []
+      },
+      "complaint": {
+        "facts_provided": 1,
+        "facts_missing": [],
+        "invented_identifiers": []
+      }
+    },
+    {
+      "id": "e04",
+      "expected": "upi_fraud",
+      "predicted": "upi_fraud",
+      "confidence": 0.96,
+      "correct": true,
+      "acceptable": true,
+      "extraction_warnings": [],
+      "identifiers": {
+        "upi_ids": true,
+        "amount": true
+      },
+      "retrieved": [
+        "upi_fraud",
+        "shopping_fraud",
+        "phishing"
+      ],
+      "retrieval_hit_at_3": true,
+      "grounding": {
+        "unsupported_mentions": [],
+        "invalid_source_ids": [],
+        "evidence_destruction_advice": []
+      },
+      "complaint": {
+        "facts_provided": 3,
+        "facts_missing": [],
+        "invented_identifiers": []
+      }
+    },
+    {
+      "id": "e05",
+      "expected": "banking_fraud",
+      "predicted": "banking_fraud",
+      "confidence": 0.92,
+      "correct": true,
+      "acceptable": true,
+      "extraction_warnings": [],
+      "identifiers": {
+        "amount": true
+      },
+      "retrieved": [
+        "phishing",
+        "upi_fraud",
+        "banking_fraud"
+      ],
+      "retrieval_hit_at_3": true,
+      "grounding": {
+        "unsupported_mentions": [],
+        "invalid_source_ids": [],
+        "evidence_destruction_advice": []
+      },
+      "complaint": {
+        "facts_provided": 1,
+        "facts_missing": [],
+        "invented_identifiers": []
+      }
+    },
+    {
+      "id": "e06",
+      "expected": "shopping_fraud",
+      "predicted": "shopping_fraud",
+      "confidence": 0.95,
+      "correct": true,
+      "acceptable": true,
+      "extraction_warnings": [],
+      "identifiers": {
+        "amount": true
+      },
+      "retrieved": [
+        "vishing",
+        "upi_fraud",
+        "shopping_fraud"
+      ],
+      "retrieval_hit_at_3": true,
+      "grounding": {
+        "unsupported_mentions": [],
+        "invalid_source_ids": [],
+        "evidence_destruction_advice": []
+      },
+      "complaint": {
+        "facts_provided": 1,
+        "facts_missing": [],
+        "invented_identifiers": []
+      }
+    },
+    {
+      "id": "e07",
+      "expected": "investment_scam",
+      "predicted": "investment_scam",
+      "confidence": 0.95,
+      "correct": true,
+      "acceptable": true,
+      "extraction_warnings": [],
+      "identifiers": {
+        "amount": true
+      },
+      "retrieved": [
+        "job_scam",
+        "phishing",
+        "vishing"
+      ],
+      "retrieval_hit_at_3": true,
+      "grounding": {
+        "unsupported_mentions": [],
+        "invalid_source_ids": [],
+        "evidence_destruction_advice": [
+          "Save the entire Telegram chat (screenshots or export) and any transaction receipts before deleting anything."
+        ]
+      },
+      "complaint": {
+        "facts_provided": 1,
+        "facts_missing": [],
+        "invented_identifiers": []
+      }
+    },
+    {
+      "id": "e08",
+      "expected": "job_scam",
+      "predicted": "job_scam",
+      "confidence": 0.92,
+      "correct": true,
+      "acceptable": true,
+      "extraction_warnings": [],
+      "identifiers": {
+        "amount": true
+      },
+      "retrieved": [
+        "job_scam",
+        "shopping_fraud",
+        "phishing"
+      ],
+      "retrieval_hit_at_3": true,
+      "grounding": {
+        "unsupported_mentions": [],
+        "invalid_source_ids": [],
+        "evidence_destruction_advice": []
+      },
+      "complaint": {
+        "facts_provided": 0,
+        "facts_missing": [],
+        "invented_identifiers": []
+      }
+    },
+    {
+      "id": "e09",
+      "expected": "identity_theft",
+      "predicted": "identity_theft",
+      "confidence": 0.96,
+      "correct": true,
+      "acceptable": true,
+      "extraction_warnings": [],
+      "identifiers": {},
+      "retrieved": [
+        "upi_fraud",
+        "banking_fraud",
+        "vishing"
+      ],
+      "retrieval_hit_at_3": true,
+      "grounding": {
+        "unsupported_mentions": [],
+        "invalid_source_ids": [],
+        "evidence_destruction_advice": []
+      },
+      "complaint": {
+        "facts_provided": 0,
+        "facts_missing": [],
+        "invented_identifiers": []
+      }
+    },
+    {
+      "id": "e10",
+      "expected": "account_takeover",
+      "predicted": "account_takeover",
+      "confidence": 0.9,
+      "correct": true,
+      "acceptable": true,
+      "extraction_warnings": [],
+      "identifiers": {},
+      "retrieved": [
+        "social_media_impersonation",
+        "phishing",
+        "upi_fraud"
+      ],
+      "retrieval_hit_at_3": true,
+      "grounding": {
+        "unsupported_mentions": [],
+        "invalid_source_ids": [],
+        "evidence_destruction_advice": []
+      },
+      "complaint": {
+        "facts_provided": 1,
+        "facts_missing": [],
+        "invented_identifiers": []
+      }
+    },
+    {
+      "id": "e11",
+      "expected": "social_media_impersonation",
+      "predicted": "social_media_impersonation",
+      "confidence": 0.95,
+      "correct": true,
+      "acceptable": true,
+      "extraction_warnings": [],
+      "identifiers": {},
+      "retrieved": [
+        "social_media_impersonation",
+        "phishing",
+        "shopping_fraud"
+      ],
+      "retrieval_hit_at_3": true,
+      "grounding": {
+        "unsupported_mentions": [],
+        "invalid_source_ids": [],
+        "evidence_destruction_advice": []
+      },
+      "complaint": {
+        "facts_provided": 1,
+        "facts_missing": [],
+        "invented_identifiers": []
+      }
+    },
+    {
+      "id": "e12",
+      "expected": "malware",
+      "predicted": "malware",
+      "confidence": 0.95,
+      "correct": true,
+      "acceptable": true,
+      "extraction_warnings": [],
+      "identifiers": {},
+      "retrieved": [
+        "vishing",
+        "malware",
+        "phishing"
+      ],
+      "retrieval_hit_at_3": true,
+      "grounding": {
+        "unsupported_mentions": [],
+        "invalid_source_ids": [],
+        "evidence_destruction_advice": [
+          "If possible, perform a factory reset after backing up and preserving evidence.",
+          "After backup, consider a full factory reset to remove any hidden malware."
+        ]
+      },
+      "complaint": {
+        "facts_provided": 1,
+        "facts_missing": [],
+        "invented_identifiers": []
+      }
+    },
+    {
+      "id": "e13",
+      "expected": "ransomware",
+      "predicted": "ransomware",
+      "confidence": 0.95,
+      "correct": true,
+      "acceptable": true,
+      "extraction_warnings": [],
+      "identifiers": {},
+      "retrieved": [
+        "malware",
+        "social_media_impersonation",
+        "vishing"
+      ],
+      "retrieval_hit_at_3": true,
+      "grounding": {
+        "unsupported_mentions": [],
+        "invalid_source_ids": [],
+        "evidence_destruction_advice": []
+      },
+      "complaint": {
+        "facts_provided": 1,
+        "facts_missing": [],
+        "invented_identifiers": []
+      }
+    },
+    {
+      "id": "e14",
+      "expected": "sextortion",
+      "predicted": "sextortion",
+      "confidence": 0.92,
+      "correct": true,
+      "acceptable": true,
+      "extraction_warnings": [],
+      "identifiers": {},
+      "retrieved": [
+        "social_media_impersonation",
+        "vishing",
+        "malware"
+      ],
+      "retrieval_hit_at_3": true,
+      "grounding": {
+        "unsupported_mentions": [],
+        "invalid_source_ids": [],
+        "evidence_destruction_advice": []
+      },
+      "complaint": {
+        "facts_provided": 0,
+        "facts_missing": [],
+        "invented_identifiers": []
+      }
+    },
+    {
+      "id": "e15",
+      "expected": "cyberbullying",
+      "predicted": "cyberbullying",
+      "confidence": 0.9,
+      "correct": true,
+      "acceptable": true,
+      "extraction_warnings": [],
+      "identifiers": {},
+      "retrieved": [
+        "social_media_impersonation",
+        "reporting"
+      ],
+      "retrieval_hit_at_3": true,
+      "grounding": {
+        "unsupported_mentions": [
+          "1930"
+        ],
+        "invalid_source_ids": [],
+        "evidence_destruction_advice": []
+      },
+      "complaint": {
+        "facts_provided": 0,
+        "facts_missing": [],
+        "invented_identifiers": []
+      }
+    },
+    {
+      "id": "e16",
+      "expected": "romance_scam",
+      "predicted": "romance_scam",
+      "confidence": 0.93,
+      "correct": true,
+      "acceptable": true,
+      "extraction_warnings": [],
+      "identifiers": {},
+      "retrieved": [
+        "shopping_fraud",
+        "upi_fraud"
+      ],
+      "grounding": {
+        "unsupported_mentions": [],
+        "invalid_source_ids": [],
+        "evidence_destruction_advice": []
+      },
+      "complaint": {
+        "facts_provided": 1,
+        "facts_missing": [],
+        "invented_identifiers": []
+      }
+    },
+    {
+      "id": "e17",
+      "expected": "crypto_scam",
+      "predicted": "crypto_scam",
+      "confidence": 0.85,
+      "correct": true,
+      "acceptable": true,
+      "extraction_warnings": [],
+      "identifiers": {},
+      "retrieved": [
+        "phishing",
+        "shopping_fraud"
+      ],
+      "retrieval_hit_at_3": false,
+      "grounding": {
+        "unsupported_mentions": [],
+        "invalid_source_ids": [],
+        "evidence_destruction_advice": []
+      },
+      "complaint": {
+        "facts_provided": 1,
+        "facts_missing": [],
+        "invented_identifiers": []
+      }
+    },
+    {
+      "id": "e18",
+      "expected": "unknown",
+      "predicted": "unknown",
+      "confidence": 0.2,
+      "correct": true,
+      "acceptable": true,
+      "extraction_warnings": [],
+      "identifiers": {},
+      "retrieved": [
+        "shopping_fraud",
+        "reporting",
+        "vishing"
+      ]
+    },
+    {
+      "id": "e19",
+      "expected": "phishing",
+      "predicted": "phishing",
+      "confidence": 0.9,
+      "correct": true,
+      "acceptable": true,
+      "extraction_warnings": [],
+      "identifiers": {
+        "emails": true,
+        "urls": true
+      },
+      "retrieved": [
+        "phishing",
+        "banking_fraud",
+        "upi_fraud"
+      ],
+      "retrieval_hit_at_3": true,
+      "grounding": {
+        "unsupported_mentions": [],
+        "invalid_source_ids": [],
+        "evidence_destruction_advice": []
+      },
+      "complaint": {
+        "facts_provided": 3,
+        "facts_missing": [],
+        "invented_identifiers": []
+      }
+    },
+    {
+      "id": "e20",
+      "expected": "data_theft",
+      "predicted": "data_theft",
+      "confidence": 0.92,
+      "correct": true,
+      "acceptable": true,
+      "extraction_warnings": [],
+      "identifiers": {},
+      "retrieved": [
+        "reporting",
+        "banking_fraud",
+        "vishing"
+      ],
+      "retrieval_hit_at_3": false,
+      "grounding": {
+        "unsupported_mentions": [],
+        "invalid_source_ids": [],
+        "evidence_destruction_advice": []
+      },
+      "complaint": {
+        "facts_provided": 0,
+        "facts_missing": [],
+        "invented_identifiers": []
+      }
+    }
+  ]
+}

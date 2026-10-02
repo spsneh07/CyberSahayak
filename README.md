@@ -56,7 +56,10 @@ frontend/          Next.js app            knowledge_base/  RAG documents
 | **Real LLM** | `LLM_PROVIDER=openai` (any OpenAI-compatible API, e.g. Groq) or `anthropic` | — | real extraction, classification, generation |
 | **Real embeddings** | — | `local` (sentence-transformers `all-MiniLM-L6-v2`, 384-d, runs on CPU) or `openai` | semantic retrieval |
 
-Validated configuration (2026-10-02): Groq `openai/gpt-oss-120b` + local `all-MiniLM-L6-v2` + PostgreSQL 16 / pgvector 0.8.7.
+Validated configuration (2026-10-02): Groq `openai/gpt-oss-120b` (evaluation, scripted demo) and
+`openai/gpt-oss-20b` (real-provider tests, web-UI demo) + local `all-MiniLM-L6-v2` + PostgreSQL 16 /
+pgvector 0.8.7. Groq's free tier allows 200,000 tokens/day per model; one full evaluation run used almost
+all of it for the 120b model.
 
 ## Requirements
 
