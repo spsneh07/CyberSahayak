@@ -1,0 +1,467 @@
+{
+  "summary": {
+    "mode": "retrieval-only",
+    "run_at": "2026-10-02T13:07:00.372614+00:00",
+    "embeddings": "local:sentence-transformers/all-MiniLM-L6-v2:384",
+    "cases_with_relevant_docs": 19,
+    "hit_at_1": "11/19",
+    "hit_at_3": "17/19",
+    "cases_with_official_text_in_top3": "14/20",
+    "note": "Relevance = topic category of the KB document; official texts are category 'general' and never count as hits."
+  },
+  "rows": [
+    {
+      "id": "e01",
+      "retrieved": [
+        [
+          "phishing",
+          "curated_summary",
+          0.6096
+        ],
+        [
+          "general",
+          "official_text",
+          0.4791
+        ],
+        [
+          "upi_fraud",
+          "curated_summary",
+          0.478
+        ]
+      ],
+      "hit_at_3": true,
+      "hit_at_1": true,
+      "official_in_top3": true
+    },
+    {
+      "id": "e02",
+      "retrieved": [
+        [
+          "smishing",
+          "curated_summary",
+          0.3927
+        ],
+        [
+          "banking_fraud",
+          "curated_summary",
+          0.343
+        ],
+        [
+          "general",
+          "official_text",
+          0.3267
+        ]
+      ],
+      "hit_at_3": true,
+      "hit_at_1": true,
+      "official_in_top3": true
+    },
+    {
+      "id": "e03",
+      "retrieved": [
+        [
+          "general",
+          "official_text",
+          0.6295
+        ],
+        [
+          "phishing",
+          "curated_summary",
+          0.6208
+        ],
+        [
+          "banking_fraud",
+          "curated_summary",
+          0.5778
+        ]
+      ],
+      "hit_at_3": true,
+      "hit_at_1": false,
+      "official_in_top3": true
+    },
+    {
+      "id": "e04",
+      "retrieved": [
+        [
+          "upi_fraud",
+          "curated_summary",
+          0.6125
+        ],
+        [
+          "shopping_fraud",
+          "curated_summary",
+          0.4595
+        ],
+        [
+          "general",
+          "official_text",
+          0.3988
+        ]
+      ],
+      "hit_at_3": true,
+      "hit_at_1": true,
+      "official_in_top3": true
+    },
+    {
+      "id": "e05",
+      "retrieved": [
+        [
+          "phishing",
+          "curated_summary",
+          0.5234
+        ],
+        [
+          "upi_fraud",
+          "curated_summary",
+          0.4971
+        ],
+        [
+          "banking_fraud",
+          "curated_summary",
+          0.4946
+        ]
+      ],
+      "hit_at_3": true,
+      "hit_at_1": false,
+      "official_in_top3": false
+    },
+    {
+      "id": "e06",
+      "retrieved": [
+        [
+          "vishing",
+          "curated_summary",
+          0.3924
+        ],
+        [
+          "upi_fraud",
+          "curated_summary",
+          0.371
+        ],
+        [
+          "general",
+          "official_text",
+          0.3707
+        ]
+      ],
+      "hit_at_3": false,
+      "hit_at_1": false,
+      "official_in_top3": true
+    },
+    {
+      "id": "e07",
+      "retrieved": [
+        [
+          "job_scam",
+          "curated_summary",
+          0.4279
+        ],
+        [
+          "romance_scam",
+          "curated_summary",
+          0.3523
+        ],
+        [
+          "phishing",
+          "curated_summary",
+          0.2749
+        ]
+      ],
+      "hit_at_3": true,
+      "hit_at_1": true,
+      "official_in_top3": false
+    },
+    {
+      "id": "e08",
+      "retrieved": [
+        [
+          "job_scam",
+          "curated_summary",
+          0.3461
+        ],
+        [
+          "romance_scam",
+          "curated_summary",
+          0.3346
+        ],
+        [
+          "shopping_fraud",
+          "curated_summary",
+          0.292
+        ]
+      ],
+      "hit_at_3": true,
+      "hit_at_1": true,
+      "official_in_top3": false
+    },
+    {
+      "id": "e09",
+      "retrieved": [
+        [
+          "data_theft",
+          "curated_summary",
+          0.4592
+        ],
+        [
+          "upi_fraud",
+          "curated_summary",
+          0.432
+        ],
+        [
+          "banking_fraud",
+          "curated_summary",
+          0.4303
+        ]
+      ],
+      "hit_at_3": true,
+      "hit_at_1": true,
+      "official_in_top3": false
+    },
+    {
+      "id": "e10",
+      "retrieved": [
+        [
+          "data_theft",
+          "curated_summary",
+          0.4819
+        ],
+        [
+          "social_media_impersonation",
+          "curated_summary",
+          0.453
+        ],
+        [
+          "general",
+          "official_text",
+          0.4521
+        ]
+      ],
+      "hit_at_3": true,
+      "hit_at_1": true,
+      "official_in_top3": true
+    },
+    {
+      "id": "e11",
+      "retrieved": [
+        [
+          "social_media_impersonation",
+          "curated_summary",
+          0.7052
+        ],
+        [
+          "general",
+          "official_text",
+          0.5999
+        ],
+        [
+          "romance_scam",
+          "curated_summary",
+          0.4853
+        ]
+      ],
+      "hit_at_3": true,
+      "hit_at_1": true,
+      "official_in_top3": true
+    },
+    {
+      "id": "e12",
+      "retrieved": [
+        [
+          "general",
+          "official_text",
+          0.3662
+        ],
+        [
+          "vishing",
+          "curated_summary",
+          0.3406
+        ],
+        [
+          "malware",
+          "curated_summary",
+          0.3016
+        ]
+      ],
+      "hit_at_3": true,
+      "hit_at_1": false,
+      "official_in_top3": true
+    },
+    {
+      "id": "e13",
+      "retrieved": [
+        [
+          "ransomware",
+          "curated_summary",
+          0.7169
+        ],
+        [
+          "malware",
+          "curated_summary",
+          0.519
+        ],
+        [
+          "general",
+          "official_text",
+          0.4216
+        ]
+      ],
+      "hit_at_3": true,
+      "hit_at_1": true,
+      "official_in_top3": true
+    },
+    {
+      "id": "e14",
+      "retrieved": [
+        [
+          "general",
+          "official_text",
+          0.6029
+        ],
+        [
+          "social_media_impersonation",
+          "curated_summary",
+          0.5235
+        ],
+        [
+          "romance_scam",
+          "curated_summary",
+          0.5024
+        ]
+      ],
+      "hit_at_3": true,
+      "hit_at_1": false,
+      "official_in_top3": true
+    },
+    {
+      "id": "e15",
+      "retrieved": [
+        [
+          "general",
+          "official_text",
+          0.5003
+        ],
+        [
+          "general",
+          "official_text",
+          0.4095
+        ],
+        [
+          "social_media_impersonation",
+          "curated_summary",
+          0.3562
+        ]
+      ],
+      "hit_at_3": true,
+      "hit_at_1": false,
+      "official_in_top3": true
+    },
+    {
+      "id": "e16",
+      "retrieved": [
+        [
+          "romance_scam",
+          "curated_summary",
+          0.6845
+        ],
+        [
+          "shopping_fraud",
+          "curated_summary",
+          0.3384
+        ],
+        [
+          "upi_fraud",
+          "curated_summary",
+          0.2811
+        ]
+      ],
+      "hit_at_3": true,
+      "hit_at_1": true,
+      "official_in_top3": false
+    },
+    {
+      "id": "e17",
+      "retrieved": [
+        [
+          "phishing",
+          "curated_summary",
+          0.2652
+        ],
+        [
+          "shopping_fraud",
+          "curated_summary",
+          0.2566
+        ]
+      ],
+      "hit_at_3": false,
+      "hit_at_1": false,
+      "official_in_top3": false
+    },
+    {
+      "id": "e18",
+      "retrieved": [
+        [
+          "general",
+          "official_text",
+          0.3684
+        ],
+        [
+          "shopping_fraud",
+          "curated_summary",
+          0.3579
+        ],
+        [
+          "reporting",
+          "curated_summary",
+          0.3566
+        ]
+      ],
+      "official_in_top3": true
+    },
+    {
+      "id": "e19",
+      "retrieved": [
+        [
+          "general",
+          "official_text",
+          0.6287
+        ],
+        [
+          "phishing",
+          "curated_summary",
+          0.5393
+        ],
+        [
+          "banking_fraud",
+          "curated_summary",
+          0.5076
+        ]
+      ],
+      "hit_at_3": true,
+      "hit_at_1": false,
+      "official_in_top3": true
+    },
+    {
+      "id": "e20",
+      "retrieved": [
+        [
+          "data_theft",
+          "curated_summary",
+          0.7073
+        ],
+        [
+          "general",
+          "official_text",
+          0.488
+        ],
+        [
+          "general",
+          "official_text",
+          0.4673
+        ]
+      ],
+      "hit_at_3": true,
+      "hit_at_1": true,
+      "official_in_top3": true
+    }
+  ]
+}

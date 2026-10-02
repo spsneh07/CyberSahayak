@@ -58,9 +58,16 @@ instead of inventing them. Hits below `RAG_MIN_SCORE` are dropped.
 
 ## Knowledge base provenance
 
-Seed documents are **curated summaries written by the project team** (labelled `curated_summary`), each linked
-to the official organisation page. They are not verbatim official texts. Verify details at the linked source
-and prefer adding the original official documents. See `knowledge_base/README.md`.
+Two kinds of document, always distinguishable in metadata and in the UI:
+
+| Kind | `document_type` | Count (2026-10-02) | Chunks | Source note shown to users |
+|---|---|---|---|---|
+| Team-written summaries | `curated_summary` | 14 | 31 | "Team-written summary … Not the official text; verify details at the source URL." |
+| Official texts (CERT-In booklet, NCRP safety tips) | `official_text` | 2 | 38 | "Official document published by …, downloaded from <URL> on <date> (sha256 …). Text extracted automatically; verify against the original." |
+
+Official texts are fetched with `python -m scripts.fetch_official_kb` (manifest:
+`knowledge_base/official_sources.json`) and ingested locally; they are not committed to the repository.
+Their category is `general` (they cover many topics). See `knowledge_base/README.md`.
 
 ## Validation on PostgreSQL + pgvector (2026-10-02)
 
@@ -85,3 +92,21 @@ With the real LLM on the demo message, the explanation cited `[S1]` and the chat
 S6 — all ids that were actually retrieved — and the guidance's
 reporting channels (1930 helpline, cybercrime.gov.in, RBI three-working-day reporting) all occur in the
 retrieved excerpts (NCRP and RBI summaries).
+
+## Retrieval re-measured after expanding the knowledge base (2026-10-02)
+
+`python -m evaluation.run_eval --mode real --retrieval-only` — no LLM calls; 16 documents / 69 chunks;
+`local:all-MiniLM-L6-v2`; top-3 documents; `RAG_MIN_SCORE=0.25`. Relevance = the document's topic category
+is listed for the case (official texts are `general` and never count as hits, although they appeared in the
+top 3 for 14/20 cases). The relevance labels were extended for the new topic documents, so this is **not
+directly comparable** with the earlier 15/18 (old KB, old labels).
+
+| Metric | Result |
+|---|---|
+| Cases with a relevant topic document | 19 |
+| Relevant topic document ranked 1st | 11/19 |
+| Relevant topic document in top 3 | 17/19 |
+
+Misses: e06 online-shopping fraud (vishing/UPI/official booklet retrieved) and e17 crypto exchange scam
+(only two documents above the score threshold, neither relevant). Raw output:
+`backend/evaluation/results_retrieval.json`.

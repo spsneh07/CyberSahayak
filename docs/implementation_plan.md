@@ -58,3 +58,13 @@ date with a placeholder (prompt); provider errors not diagnosable (status + mess
 
 Open items: replace curated summaries with original official documents; add KB coverage for smishing,
 crypto, data-breach and romance scams; rerun the evaluation with a larger, independently labelled dataset.
+
+## Final hardening (2026-10-02)
+
+| Area | Result |
+|---|---|
+| Knowledge base | 2 official texts added (CERT-In booklet, NCRP safety tips; fetched by script, provenance + SHA-256, not committed) and 4 team-written summaries (smishing, ransomware, romance/crypto, data breach/identity theft/account takeover): 16 documents / 69 chunks in pgvector |
+| Complaint hallucination | Deterministic sentence-level validator + 14 regression tests (incl. the exact real-model sentences) |
+| Docker | `docker compose up -d --build` on fresh volumes: migrations, model download, ingestion in-container, full demo via the browser |
+| Retrieval | Re-measured without LLM: 17/19 hit@3, 11/19 hit@1 |
+| Security | No secrets/`.env`/official texts tracked; no user text or keys in container logs; KB URLs http(s) only; 0 injection-like lines in official texts |

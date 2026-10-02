@@ -10,6 +10,10 @@ validation (stage bar keeps moving; backend retries 429s). For a live presentati
 beforehand, consider a paid/higher-limit key, or fall back to offline mock mode (`LLM_PROVIDER=mock`,
 clearly labelled in the UI). Wording of real-LLM answers varies between runs.
 
+**Docker option (validated 2026-10-02):** `docker compose up -d --build`, then
+`docker compose exec backend python -m scripts.ingest_kb` (after `python -m scripts.fetch_official_kb` on
+the host). The full demo below was run through the containers on fresh volumes.
+
 ## 1. Dashboard (30 s)
 - Open http://localhost:3000. Point out system status: backend online, AI provider, **knowledge chunks indexed** (proves RAG data is loaded), the pipeline strip.
 
@@ -32,9 +36,12 @@ clearly labelled in the UI). Wording of real-LLM answers varies between runs.
 - Click **Evidence Checklist**: prioritised items, screenshots already ticked.
 
 ## 6. Complaint draft (1 min)
+- Point out: the narrative is checked sentence by sentence against the incident record; unsupported claims
+  (e.g. "I have not taken any action") are removed and missing values stay as placeholders.
 - **Complaint tab** → optionally enter a name → **Generate draft**. Show filled facts vs `[PLACEHOLDERS]` and the live "N placeholders to fill" counter as you edit. Copy / download.
 
 ## 7. Awareness (30 s)
+- Resources come only from retrieved sources; in the Docker run they included the official CERT-In booklet.
 - Click **Cyber Safety Tips**: personalised warning signs, prevention, precautions, and resources restricted to retrieved sources.
 
 ## 8. Engineering talking points

@@ -89,13 +89,31 @@ alongside this dataset.
 `openai/gpt-oss-20b` (Groq). They were run on the 20b model because the evaluation exhausted the
 120b model's free-tier daily token quota (200,000 tokens/day; HTTP 429 "tokens per day").
 
+### Retrieval re-measured after the knowledge-base expansion
+Retrieval-only run (no LLM) on 16 documents: relevant topic document in top 3 for **17/19**, ranked first
+for **11/19** (details and caveats in `docs/rag.md`). The full real-model evaluation above was **not**
+re-run after the KB expansion or the complaint validator (Groq daily quota), so its numbers describe the
+earlier 10-document KB.
+
+### Complaint claim validation (deterministic)
+`services/complaint/validator.py` checks every narrative sentence against the structured incident and the
+user's own words: claims about actions taken or not taken (only kept if `actions_taken` supports them),
+"no loss" / loss claims (must match `financial_loss`), what the user shared/entered/clicked (must match a
+user statement with the same polarity), amounts (must equal the recorded amount) and dates/times (must
+appear in what the user said). Unsupported sentences are removed; unsupported values become `[AMOUNT]`,
+`[DATE]`, `[TIME]`. Removed claims are returned as `validation_notes`. Regression tests include the exact
+sentences produced by the real models ("I have not taken any further action", "I have not yet taken any
+action to report the incident"). In the Docker end-to-end run the generated narrative contained only
+stated facts.
+
 ### Qualitative observations (not measured)
 From manual end-to-end runs (120b via script, 20b via the web UI):
 - Extraction kept unknowns unknown; follow-up details merged into the same incident and only the remaining
   gap (suspect contact) was asked.
-- Complaint drafts used the stated date verbatim after the prompt fix, but the 20b model still wrote
-  "I have not yet taken any action to report the incident" once, despite the prompt rule (unknown ≠ none),
-  and described the sender as "a contact". Users must review drafts.
+- Complaint drafts used the stated date verbatim after the prompt fix. Before the deterministic validator
+  the 20b model once wrote "I have not yet taken any action to report the incident" and described the
+  sender as "a contact"; the first is now removed automatically, the second kind of embellishment is not
+  detected. Users must review drafts.
 - Some guidance items are generic or slightly inaccurate (e.g. advising WhatsApp "end-to-end encryption
   settings").
 - Retrieval returns marginally related documents in lower ranks (e.g. job-scam summary at 0.44 for the

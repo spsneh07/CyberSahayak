@@ -11,5 +11,5 @@ frontend/next-env.d.ts
 *.log
 backend/evaluation/results.json
 backend/evaluation/results_offline.json
-.claude/
 *.tsbuildinfo
+knowledge_base/official/

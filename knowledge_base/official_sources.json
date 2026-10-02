@@ -1,0 +1,22 @@
+[
+  {
+    "filename": "cert_in_csa_booklet.pdf",
+    "format": "pdf",
+    "url": "https://www.cert-in.org.in/PDF/CSA_Booklet.pdf",
+    "title": "Cyber Security Awareness Booklet for Digital Nagriks and Digital Enterprises",
+    "organization": "Indian Computer Emergency Response Team (CERT-In), MeitY",
+    "category": "general",
+    "date": "",
+    "document_type": "official_text"
+  },
+  {
+    "filename": "ncrp_online_safety_tips.txt",
+    "format": "html",
+    "url": "https://cybercrime.gov.in/Webform/Crime_OnlineSafetyTips.aspx",
+    "title": "Online Safety Tips — National Cyber Crime Reporting Portal",
+    "organization": "Indian Cyber Crime Coordination Centre (I4C), Ministry of Home Affairs",
+    "category": "general",
+    "date": "",
+    "document_type": "official_text"
+  }
+]

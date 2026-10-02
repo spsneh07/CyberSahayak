@@ -9,6 +9,7 @@ from app.services.ai.base import LLMProvider, StructuredOutputError
 from app.services.ai.prompts import complaint as prompt
 from app.services.ai.structured import generate_structured
 from app.services.classification.taxonomy import label
+from app.services.complaint.validator import validate_narrative
 from app.services.incident.identifiers import extract_identifiers, normalize
 
 PLACEHOLDER_RE = re.compile(r"\[[A-Z][A-Z0-9 /'’&,.-]{1,80}\]")
@@ -44,17 +45,19 @@ class ComplaintGenerator:
         self.llm = llm
 
     def generate(self, incident: IncidentData, cls: ClassificationResult | None,
-                 complainant: ComplainantDetails | None = None) -> tuple[str, str, list[str]]:
+                 complainant: ComplainantDetails | None = None) -> tuple[str, str, list[str], list[str]]:
+        """Return (subject, body, placeholders, validation_notes)."""
         c = complainant or ComplainantDetails()
         category = label(cls.category) if cls and cls.category != "unknown" else (incident.incident_type or "[INCIDENT TYPE]")
         try:
             out = generate_structured(self.llm, task=prompt.TASK, system=prompt.SYSTEM,
                                       user=prompt.build(incident, cls), schema=ComplaintNarrative)
             narrative = _grounded_narrative(out.narrative.strip(), incident)
+            narrative, notes = validate_narrative(narrative, incident)
             requests = out.requested_assistance
         except StructuredOutputError:
             narrative = incident.description or "[DESCRIBE THE INCIDENT IN DETAIL]"
-            requests = []
+            requests, notes = [], []
         if not requests:
             requests = ["Register my complaint and investigate the matter."]
 
@@ -124,4 +127,4 @@ Yours faithfully,
 [SIGNATURE]
 """
         placeholders = sorted(set(PLACEHOLDER_RE.findall(body)))
-        return subject, body, placeholders
+        return subject, body, placeholders, notes

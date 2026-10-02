@@ -15,7 +15,8 @@ from app.services.rag.ingest import Ingestor
 def main() -> None:
     settings = get_settings()
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dir", default=str(Path(settings.knowledge_base_dir) / "documents"))
+    # documents/ (team-written summaries) + official/ (official texts fetched by scripts.fetch_official_kb)
+    parser.add_argument("--dir", default=settings.knowledge_base_dir)
     parser.add_argument("--no-prune", action="store_true")
     args = parser.parse_args()
     setup_logging(settings.log_level)

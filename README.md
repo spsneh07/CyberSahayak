@@ -92,6 +92,7 @@ pip install -r requirements-dev.txt
 pip install torch --index-url https://download.pytorch.org/whl/cpu   # only for EMBEDDING_PROVIDER=local
 pip install -r requirements-ml.txt                                   # only for EMBEDDING_PROVIDER=local
 alembic upgrade head
+python -m scripts.fetch_official_kb   # downloads the official texts listed in knowledge_base/official_sources.json
 python -m scripts.ingest_kb
 uvicorn app.main:app --port 8000
 ```
@@ -104,8 +105,10 @@ npm install
 npm run dev                                 # http://localhost:3000
 ```
 
-Everything in Docker: `docker compose up --build` (set `INSTALL_ML=true` in `.env` for local embeddings),
-then once: `docker compose exec backend python -m scripts.ingest_kb`.
+Everything in Docker (validated 2026-10-02 on fresh volumes): set `INSTALL_ML=true` in `.env`, run
+`python -m scripts.fetch_official_kb` once on the host (from `backend/`), then
+`docker compose up -d --build` and once `docker compose exec backend python -m scripts.ingest_kb`.
+The backend container downloads the embedding model on first use into the `hfcache` volume.
 
 `GET /health` reports the database dialect, providers, number of indexed chunks and the embedding model
 the knowledge base was built with. If the configured embedding model differs from the one used at
@@ -162,10 +165,15 @@ are **not** model accuracy.
 
 ## RAG ingestion
 
-Add `.md`/`.txt` files with front-matter (or `.pdf` + `.meta.json`) to `knowledge_base/documents/` and run
-`python -m scripts.ingest_kb`. Required metadata: `title, organization, url (http/https), category,
-document_type, source_note`. The seed documents are **team-written summaries** of public guidance,
-labelled `curated_summary` with a provenance note shown in the UI; they are not official texts. See
+The knowledge base has two clearly separated parts:
+
+- `knowledge_base/documents/` — 14 **team-written summaries** (`curated_summary`), committed.
+- `knowledge_base/official/` — **official texts** (CERT-In Cyber Security Awareness Booklet; NCRP Online
+  Safety Tips page), downloaded unmodified by `python -m scripts.fetch_official_kb`, labelled
+  `official_text` with URL, download date and SHA-256. Not committed (not redistributed).
+
+Required metadata for every document: `title, organization, url (http/https), category, document_type,
+source_note`. Ingest everything with `python -m scripts.ingest_kb`. See
 [knowledge_base/README.md](knowledge_base/README.md) and [docs/rag.md](docs/rag.md).
 
 ## API
@@ -185,13 +193,17 @@ labelled `curated_summary` with a provenance note shown in the UI; they are not 
 Interactive docs at http://localhost:8000/docs. Errors share one shape: `{"error": {"code", "message", "details"}}`.
 
 ## Limitations
-- Seed knowledge base is small (10 documents, 21 chunks) and consists of team-written summaries, not official full texts.
-- Several categories (romance, crypto, identity theft, data breach) have no dedicated KB document.
+- Knowledge base is small: 16 documents / 69 chunks. Only 2 are official texts; 14 are team-written
+  summaries. RBI, NPCI and several cybercrime.gov.in documents could not be retrieved and are covered only
+  by summaries.
+- Retrieval misses remain (e.g. online-shopping and crypto-exchange cases; see docs/rag.md).
 - `hash` embeddings are lexical; use `local` or `openai` for semantic retrieval.
 - Mock mode is heuristic and not a language model.
 - One analysed message makes ~5–6 LLM calls. On Groq's free tier, rate limits (HTTP 429, retried with
   backoff) made turns take roughly 1–2 minutes during validation.
-- Output guards are rule-based (URL/helpline scrubbing, evidence-deletion filter) and can miss paraphrases.
+- Output guards are rule-based (URL/helpline scrubbing, evidence-deletion filter, complaint-claim
+  validator) and can miss paraphrases; the complaint validator is conservative and may also drop true
+  statements the user phrased differently. Drafts must be reviewed before submission.
 - No authentication; conversations are anonymous by ID. Do not deploy publicly as-is.
 - Complainant details entered for a draft are stored in the draft text.
 - English only; India-focused guidance.

@@ -73,9 +73,10 @@ class Pipeline:
 
     def complaint_for(self, incident: Incident, complainant: ComplainantDetails | None = None) -> ComplaintDraftOut:
         data, cls = self.load(incident)
-        subject, body, placeholders = self.complaints.generate(data, cls, complainant)
+        subject, body, placeholders, notes = self.complaints.generate(data, cls, complainant)
         row = self.incidents.add_complaint(incident, subject, body, placeholders)
-        return ComplaintDraftOut(id=row.id, incident_id=incident.id, subject=subject, body=body, placeholders=placeholders)
+        return ComplaintDraftOut(id=row.id, incident_id=incident.id, subject=subject, body=body,
+                                 placeholders=placeholders, validation_notes=notes)
 
     def awareness_for(self, incident: Incident | None, topic: str | None = None) -> tuple[Awareness, list[Citation]]:
         if incident is not None:

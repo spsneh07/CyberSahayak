@@ -60,15 +60,46 @@ def complaint_check(data, body: str) -> dict:
     return {"facts_provided": len(provided), "facts_missing": missing, "invented_identifiers": invented}
 
 
+def retrieval_only(settings, cases_path: str, out: str | None) -> None:
+    emb = build_embeddings(settings)
+    cases = [json.loads(x) for x in Path(cases_path).read_text(encoding="utf-8").splitlines() if x.strip()]
+    rows = []
+    with SessionLocal() as db:
+        retriever = Retriever(db, emb, top_k=3, min_score=settings.rag_min_score)
+        for case in cases:
+            hits = retriever.search(case["text"], top_k=3)
+            row = {"id": case["id"], "retrieved": [(h.category, h.document_type, h.score) for h in hits]}
+            if case["relevant_kb_categories"]:
+                row["hit_at_3"] = any(h.category in case["relevant_kb_categories"] for h in hits)
+                row["hit_at_1"] = bool(hits) and hits[0].category in case["relevant_kb_categories"]
+            row["official_in_top3"] = any(h.document_type == "official_text" for h in hits)
+            rows.append(row)
+            print(case["id"], row.get("hit_at_3"), [f"{c}/{t[:8]}:{s:.2f}" for c, t, s in row["retrieved"]])
+    scored = [r for r in rows if "hit_at_3" in r]
+    summary = {
+        "mode": "retrieval-only", "run_at": datetime.now(timezone.utc).isoformat(), "embeddings": emb.identity,
+        "cases_with_relevant_docs": len(scored),
+        "hit_at_1": f"{sum(r['hit_at_1'] for r in scored)}/{len(scored)}",
+        "hit_at_3": f"{sum(r['hit_at_3'] for r in scored)}/{len(scored)}",
+        "cases_with_official_text_in_top3": f"{sum(r['official_in_top3'] for r in rows)}/{len(rows)}",
+        "note": "Relevance = topic category of the KB document; official texts are category 'general' and never count as hits.",
+    }
+    Path(out or HERE / "results_retrieval.json").write_text(json.dumps({"summary": summary, "rows": rows}, indent=2), encoding="utf-8")
+    print(json.dumps(summary, indent=2))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", choices=["offline", "real"], required=True)
     parser.add_argument("--dataset", default=str(HERE / "dataset.jsonl"))
     parser.add_argument("--out", default=None)
     parser.add_argument("--limit", type=int, default=0, help="evaluate only the first N cases")
+    parser.add_argument("--retrieval-only", action="store_true", help="only measure retrieval (no LLM calls)")
     args = parser.parse_args()
 
     settings = get_settings()
+    if args.retrieval_only:
+        return retrieval_only(settings, cases_path=args.dataset, out=args.out)
     if args.mode == "offline":
         settings = settings.model_copy(update={"llm_provider": "mock"})  # embeddings: as configured (must match the KB)
     elif settings.llm_provider == "mock":
@@ -112,7 +143,7 @@ def main() -> None:
                     "invalid_source_ids": [i for i in raw.source_ids if i not in {s.id for s in sources}],
                     "evidence_destruction_advice": [x for x in raw.immediate_actions + raw.security_steps if destroys_evidence(x)],
                 }
-                _, body, _ = complaints.generate(data, cls)
+                _, body, _, _ = complaints.generate(data, cls)
                 row["complaint"] = complaint_check(data, body)
             rows.append(row)
             print(f"{case['id']}: {case['expected_category']:<27} -> {cls.category:<27} "

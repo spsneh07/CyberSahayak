@@ -67,6 +67,7 @@ class ComplaintDraftOut(BaseModel):
     subject: str
     body: str
     placeholders: list[str]
+    validation_notes: list[str] = Field(default_factory=list)  # unsupported claims removed from the narrative
 
 
 class RagSearchRequest(BaseModel):

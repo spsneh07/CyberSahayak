@@ -14,7 +14,7 @@ SRC = [Citation(id="S1", title="Report", organization="I4C", url="https://cyberc
 
 def test_complaint_uses_placeholders_for_missing(llm):
     incident = IncidentData(description="Got a WhatsApp message with a link asking for OTP.", platform="WhatsApp")
-    subject, body, placeholders = ComplaintGenerator(llm).generate(incident, CLS)
+    subject, body, placeholders, _ = ComplaintGenerator(llm).generate(incident, CLS)
     assert "Phishing" in subject and "WhatsApp" in subject
     for ph in ("[FULL NAME]", "[DATE AND TIME]", "[TRANSACTION ID / UTR]"):
         assert ph in body and ph in placeholders
@@ -24,7 +24,7 @@ def test_complaint_uses_placeholders_for_missing(llm):
 def test_complaint_fills_provided_facts(llm):
     incident = IncidentData(description="Lost money via UPI", financial_loss=True, amount=12000, currency="INR",
                             upi_ids=["buyer99@ybl"], date_time="yesterday", account_identifiers=["412345678901"])
-    _, body, placeholders = ComplaintGenerator(llm).generate(
+    _, body, placeholders, _ = ComplaintGenerator(llm).generate(
         incident, CLS, ComplainantDetails(name="Test User", contact="test@example.com"))
     assert "INR 12,000.00" in body and "buyer99@ybl" in body and "412345678901" in body
     assert "Test User" in body and "[FULL NAME]" not in placeholders
@@ -32,7 +32,7 @@ def test_complaint_fills_provided_facts(llm):
 
 def test_complaint_narrative_cannot_invent_identifiers(llm):
     llm.queue["complaint"].append(json.dumps({"narrative": "The fraudster called from 9000000001.", "requested_assistance": []}))
-    _, body, _ = ComplaintGenerator(llm).generate(IncidentData(description="scam call"), CLS)
+    _, body, _, _ = ComplaintGenerator(llm).generate(IncidentData(description="scam call"), CLS)
     assert "9000000001" not in body and "[PHONE NUMBER]" in body
 
 
@@ -60,7 +60,7 @@ def test_awareness_resources_only_from_sources(llm):
 
 
 def test_every_bracketed_gap_is_reported_as_placeholder(llm):
-    _, body, placeholders = ComplaintGenerator(llm).generate(IncidentData(description="scam"), CLS)
+    _, body, placeholders, _ = ComplaintGenerator(llm).generate(IncidentData(description="scam"), CLS)
     import re
 
     assert set(re.findall(r"\[[^\]]+\]", body)) == set(placeholders)
