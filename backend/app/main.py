@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from app.api.v1 import conversations, incidents, rag
+from app.api.v1 import conversations, incidents, rag, scamcheck
 from app.core.config import get_settings
 from app.core.db import get_db
 from app.core.errors import register_error_handlers
@@ -11,6 +11,7 @@ from app.core.logging import setup_logging
 from app.repositories.knowledge import KnowledgeRepository
 from app.services.ai.prompts.common import DISCLAIMER
 from app.services.classification.taxonomy import CATEGORIES
+from app.services.language import LANGUAGE_NAMES
 
 settings = get_settings()
 setup_logging(settings.log_level)
@@ -26,6 +27,7 @@ api.include_router(conversations.router)
 api.include_router(conversations.feedback_router)
 api.include_router(incidents.router)
 api.include_router(rag.router)
+api.include_router(scamcheck.router)
 
 
 @api.get("/meta", tags=["meta"])
@@ -35,6 +37,7 @@ def meta() -> dict:
         "categories": [{"id": c.id, "label": c.label} for c in CATEGORIES],
         "llm_provider": settings.llm_provider,
         "embedding_provider": settings.embedding_provider,
+        "languages": [{"id": k, "label": v} for k, v in LANGUAGE_NAMES.items()],
     }
 
 

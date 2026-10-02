@@ -7,6 +7,7 @@ from typing import TypeVar
 from pydantic import BaseModel, ValidationError
 
 from app.services.ai.base import LLMProvider, StructuredOutputError
+from app.services.language import LOCALISED_TASKS, language_instruction
 
 log = logging.getLogger(__name__)
 T = TypeVar("T", bound=BaseModel)
@@ -32,6 +33,8 @@ def parse_json_object(text: str) -> dict:
 def generate_structured(llm: LLMProvider, *, task: str, system: str, user: str,
                         schema: type[T], max_attempts: int = 2) -> T:
     json_schema = schema.model_json_schema()
+    if task in LOCALISED_TASKS:
+        system += language_instruction()
     prompt = user
     last_error = ""
     for attempt in range(1, max_attempts + 1):

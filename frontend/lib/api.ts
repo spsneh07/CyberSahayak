@@ -1,4 +1,4 @@
-import type { AssistantResult, ComplainantDetails, Intent, Meta } from "./types";
+import type { AssistantResult, ComplainantDetails, Intent, Language, Meta, RedFlagReport, UrlAnalysis } from "./types";
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -34,8 +34,17 @@ export const getHealth = () =>
 export const createConversation = () =>
   request<{ id: string }>("/api/v1/conversations", { method: "POST", body: JSON.stringify({}) });
 
+export const checkMessage = (text: string, llmExplanations = false, language: Language = "en") =>
+  request<RedFlagReport>("/api/v1/check/message", {
+    method: "POST", body: JSON.stringify({ text, llm_explanations: llmExplanations, language }),
+  });
+
+export const checkUrl = (url: string) =>
+  request<UrlAnalysis>("/api/v1/check/url", { method: "POST", body: JSON.stringify({ url }) });
+
 export interface SendOptions {
   action?: Intent;
+  language?: Language;
   complainant?: ComplainantDetails;
   onStage?: (stage: string) => void;
   signal?: AbortSignal;
@@ -45,12 +54,12 @@ export interface SendOptions {
 export async function sendMessageStream(
   conversationId: string,
   content: string,
-  { action, complainant, onStage, signal }: SendOptions = {},
+  { action, complainant, language, onStage, signal }: SendOptions = {},
 ): Promise<AssistantResult> {
   const res = await fetch(`${API_URL}/api/v1/conversations/${conversationId}/messages/stream`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ content, action, complainant }),
+    body: JSON.stringify({ content, action, complainant, language }),
     signal,
   });
   if (!res.ok || !res.body) {

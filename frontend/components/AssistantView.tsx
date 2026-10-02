@@ -7,8 +7,10 @@ import {
 } from "@/components/AnalysisPanels";
 import { ComplaintEditor } from "@/components/ComplaintEditor";
 import { IncidentSummary } from "@/components/IncidentSummary";
+import { LanguageSelect, useLanguage } from "@/components/LanguageSelect";
 import { Markdown } from "@/components/Markdown";
 import { QUICK_ACTIONS, QuickActionGrid, type QuickAction } from "@/components/QuickActions";
+import { RedFlagSummary } from "@/components/ScamCheck";
 import { StageProgress } from "@/components/StageProgress";
 import { createConversation, sendMessageStream } from "@/lib/api";
 import { categoryLabel } from "@/lib/labels";
@@ -18,7 +20,7 @@ type Tab = "analysis" | "evidence" | "sources" | "complaint" | "awareness";
 
 /** Latest non-empty value of each result section across the conversation. */
 type Insights = Partial<Pick<AssistantResult,
-  "incident" | "classification" | "explanation" | "guidance" | "complaint" | "awareness">> & { sources: AssistantResult["sources"] };
+  "incident" | "classification" | "explanation" | "guidance" | "complaint" | "awareness" | "red_flags">> & { sources: AssistantResult["sources"] };
 
 const DISCLAIMER =
   "This assistant provides educational cybersecurity guidance and complaint-drafting assistance. It is not a substitute for law enforcement, legal advice, or professional cybersecurity investigation.";
@@ -37,6 +39,7 @@ export function AssistantView() {
   const [insights, setInsights] = useState<Insights>({ sources: [] });
   const [tab, setTab] = useState<Tab>("analysis");
   const [complainant, setComplainant] = useState<ComplainantDetails>({});
+  const [language, setLanguage] = useLanguage();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const startedRef = useRef(false);
@@ -60,6 +63,7 @@ export function AssistantView() {
       guidance: r.guidance ?? prev.guidance,
       complaint: r.complaint ?? prev.complaint,
       awareness: r.awareness ?? prev.awareness,
+      red_flags: r.red_flags ?? prev.red_flags,
       sources: r.sources.length ? r.sources : prev.sources,
     }));
     if (r.complaint) setTab("complaint");
@@ -82,6 +86,7 @@ export function AssistantView() {
       const hasDetails = Object.values(complainant).some((v) => v?.trim());
       const result = await sendMessageStream(cid, content, {
         action,
+        language,
         complainant: action === "generate_complaint" && hasDetails ? complainant : undefined,
         onStage: (s) => setStages((prev) => [...prev, s]),
       });
@@ -183,7 +188,10 @@ export function AssistantView() {
             />
             <button type="submit" className="btn-primary" disabled={busy || !input.trim()}>{busy ? "Working…" : "Send"}</button>
           </div>
-          <p className="mt-2 text-[11px] text-slate-500">{DISCLAIMER}</p>
+          <div className="mt-2 flex flex-wrap items-start justify-between gap-2">
+            <p className="max-w-xl text-[11px] text-slate-500">{DISCLAIMER}</p>
+            <LanguageSelect value={language} onChange={setLanguage} />
+          </div>
         </form>
       </section>
 
@@ -203,6 +211,7 @@ export function AssistantView() {
           {tab === "analysis" && (insights.incident ? (
             <>
               <IncidentSummary incident={insights.incident} classification={insights.classification ?? null} />
+              {insights.red_flags && insights.red_flags.spans.length > 0 && <RedFlagSummary report={insights.red_flags} />}
               {insights.explanation && <ExplanationPanel explanation={insights.explanation} sources={insights.sources} />}
               {insights.guidance && <GuidancePanel guidance={insights.guidance} sources={insights.sources} />}
             </>

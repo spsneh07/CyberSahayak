@@ -25,6 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </Link>
             <div className="flex items-center gap-2">
               <Link href="/" className="btn-ghost hidden sm:inline-flex">Dashboard</Link>
+              <Link href="/check" className="btn-ghost">Check message / link</Link>
               <Link href="/assistant" className="btn-primary">Open assistant</Link>
             </div>
           </nav>

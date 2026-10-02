@@ -13,9 +13,19 @@ from app.services.ai.prompts import conversation as prompt
 from app.services.ai.structured import generate_structured
 from app.services.guidance.safety import scrub_reply
 from app.services.incident.extractor import follow_up_questions
+from app.services.language import current_language, set_language
+from app.services.scamcheck.red_flags import detect_red_flags
 from app.services.pipeline import Pipeline, StageCallback, _noop
 
 log = logging.getLogger(__name__)
+
+# Fixed replies used when the model is unavailable, per response language.
+FALLBACK_REPLIES = {
+    "en": {"analysed": "I've analysed your incident — see the summary, recommended actions and sources below.",
+           "failed": "Sorry, I couldn't generate a reply just now. Please try again."},
+    "hi": {"analysed": "मैंने आपकी घटना का विश्लेषण कर लिया है — सारांश, सुझाए गए कदम और स्रोत नीचे देखें।",
+           "failed": "माफ़ कीजिए, अभी जवाब तैयार नहीं हो सका। कृपया फिर से कोशिश करें।"},
+}
 
 
 class Orchestrator:
@@ -28,6 +38,7 @@ class Orchestrator:
         conv = self.convs.get(conversation_id)
         if conv is None:
             raise NotFoundError("Conversation")
+        set_language(msg.language)
         history = self.convs.list_messages(conversation_id, limit=6)
         self.convs.add_message(conversation_id, "user", msg.content, intent=msg.action)
         incident = self.p.incidents.latest_for_conversation(conversation_id)
@@ -44,7 +55,7 @@ class Orchestrator:
             stages.append(stage)
             emit(stage)
 
-        result = AssistantResult(intent=intent, reply="", provider=self.llm.name)
+        result = AssistantResult(intent=intent, reply="", provider=self.llm.name, language=msg.language)
 
         if intent in ("report_incident", "provide_details", "check_message"):
             existing = incident if intent == "provide_details" else None
@@ -55,6 +66,8 @@ class Orchestrator:
             result.explanation, result.guidance, result.sources = out["explanation"], out["guidance"], out["sources"]
             result.warnings = out["warnings"]
             result.follow_up_questions = follow_up_questions(out["data"].missing_information)
+            if intent != "provide_details":  # rule-based highlighting of the pasted/described text
+                result.red_flags = detect_red_flags(msg.content)
             self.convs.set_title_if_default(conv, out["data"].description[:60])
 
         elif intent in ("generate_complaint", "evidence_checklist") and incident is None:
@@ -118,6 +131,5 @@ class Orchestrator:
             return generate_structured(self.llm, task=prompt.REPLY_TASK, system=prompt.REPLY_SYSTEM,
                                        user=prompt.build_reply(message, r.intent, ctx, sources), schema=ChatReply).reply
         except (StructuredOutputError, LLMError):
-            if r.classification:
-                return "I've analysed your incident — see the summary, recommended actions and sources below."
-            return "Sorry, I couldn't generate a reply just now. Please try again."
+            replies = FALLBACK_REPLIES.get(current_language(), FALLBACK_REPLIES["en"])
+            return replies["analysed"] if r.classification else replies["failed"]

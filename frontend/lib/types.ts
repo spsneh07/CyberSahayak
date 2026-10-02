@@ -107,6 +107,50 @@ export interface AssistantResult {
   stages: string[];
   provider: string;
   warnings: string[];
+  red_flags?: RedFlagReport | null;
+  language?: Language;
+}
+
+export type Language = "en" | "hi";
+
+export interface RedFlagSpan {
+  start: number;
+  end: number;
+  text: string;
+  category: string;
+  label: string;
+  explanation: string;
+  explanation_source: "rule" | "llm";
+}
+
+export type Severity = "info" | "low" | "medium" | "high";
+
+export interface UrlIndicator {
+  code: string;
+  severity: Severity;
+  message: string;
+}
+
+export interface UrlAnalysis {
+  input: string;
+  normalized_url: string | null;
+  domain: string | null;
+  registered_domain: string | null;
+  indicators: UrlIndicator[];
+  risk_level: "low" | "medium" | "high" | "invalid";
+  score: number;
+  explanation: string;
+  method: string;
+}
+
+export interface RedFlagReport {
+  text: string;
+  spans: RedFlagSpan[];
+  categories: Record<string, number>;
+  risk_level: "none_found" | "low" | "medium" | "high";
+  summary: string;
+  url_checks: UrlAnalysis[];
+  method: string;
 }
 
 export interface ChatMessage {
@@ -122,6 +166,7 @@ export interface Meta {
   categories: { id: string; label: string }[];
   llm_provider: string;
   embedding_provider: string;
+  languages?: { id: Language; label: string }[];
 }
 
 export interface ComplainantDetails {

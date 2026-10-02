@@ -35,7 +35,8 @@ export default function Dashboard() {
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link href="/assistant?action=report" className="btn-primary px-5 py-3 text-base">Report an incident</Link>
-            <Link href="/assistant?action=check" className="btn-ghost px-5 py-3 text-base">Check a suspicious message</Link>
+            <Link href="/check" className="btn-ghost px-5 py-3 text-base">Check a suspicious message</Link>
+            <Link href="/check?mode=url" className="btn-ghost px-5 py-3 text-base">Check a link</Link>
           </div>
         </div>
         <div className="panel p-5">

@@ -6,6 +6,8 @@ from pydantic import BaseModel, Field, field_validator
 from app.schemas.classification import ClassificationResult
 from app.schemas.guidance import Awareness, Citation, ComplaintDraftOut, Explanation, Guidance
 from app.schemas.incident import ComplainantDetails, IncidentData
+from app.services.language import Language
+from app.services.scamcheck.red_flags import RedFlagReport
 
 Intent = Literal[
     "report_incident", "provide_details", "check_message", "question",
@@ -26,6 +28,7 @@ class MessageIn(BaseModel):
     content: str = Field(..., min_length=1, max_length=6000)
     action: Intent | None = Field(None, description="Explicit quick action; skips intent detection")
     complainant: ComplainantDetails | None = None
+    language: Language = Field("en", description="Language for user-facing replies (en, hi)")
 
     @field_validator("content")
     @classmethod
@@ -55,6 +58,8 @@ class AssistantResult(BaseModel):
     stages: list[str] = Field(default_factory=list)
     provider: str = ""
     warnings: list[str] = Field(default_factory=list)
+    red_flags: RedFlagReport | None = None
+    language: Language = "en"
 
 
 class MessageOut(BaseModel):

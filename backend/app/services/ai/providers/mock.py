@@ -262,6 +262,10 @@ class MockLLM(LLMProvider):
             "resources": [{"title": s["title"], "organization": s["organization"], "url": s["url"]} for s in src[:3] if s["url"]],
         }
 
+    def _redflag_explain(self, p: dict, _: list) -> dict:
+        # The mock cannot write better prose than the rule text, so it keeps the rule explanations.
+        return {"explanations": []}
+
     def _conversation(self, p: dict, src: list) -> dict:
         intent = p.get("intent")
         if intent == "smalltalk":
