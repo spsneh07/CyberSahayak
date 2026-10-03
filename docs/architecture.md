@@ -41,6 +41,7 @@ FastAPI  /api/v1   ──►  ConversationOrchestrator
 | `services/awareness` | awareness content |
 | `services/conversation` | intent detection + orchestrator |
 | `services/scamcheck` | rule-based red-flag detector (`red_flags.py`) and offline lookalike-URL analyser (`url_analyzer.py`); no AI, no network |
+| `services/evidence` | evidence integrity manifest: validation of client-side fingerprints, manifest digest, verification, complaint annexure (no AI; file contents never received) |
 | `services/language.py` | selected reply language (context variable) and the instruction appended to user-facing prompts |
 
 ## Request flow (chat message)
@@ -64,6 +65,10 @@ Novelty hooks (the stages above are unchanged):
 - For `report_incident` / `check_message`, the rule-based red-flag detector runs on the raw message and
   its report (with URL analyses of any links) is attached to the result as `red_flags`.
 - `/api/v1/check/message` and `/api/v1/check/url` expose the same detectors without the pipeline.
+- `generate_complaint` may carry `evidence_files` (fingerprint metadata from the browser); the complaint
+  template appends them deterministically as Annexure A after the narrative has been validated, so the
+  complaint validator and placeholders are unaffected. `/api/v1/evidence/manifest` and `/verify` build and
+  check manifests; the server stores no files.
 
 ## Data model
 

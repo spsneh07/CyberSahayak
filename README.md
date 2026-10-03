@@ -26,14 +26,15 @@ complaint draft with `[PLACEHOLDERS]` for missing facts, and personalised awaren
 
 ## Novelty features
 
-Three additions on top of the pipeline. Two of them are **rule-based, not AI**; the third changes only the
-language the LLM writes in.
+Four additions on top of the pipeline. Three of them are **rule-based, not AI**; the language feature changes
+only the language the LLM writes in.
 
 | Feature | How it works | Where |
 |---|---|---|
 | **Red-flag highlighting** | Pasted SMS / WhatsApp / email / chat text is scanned with fixed regular-expression rules (English, romanised Hindi and some Devanagari phrasings) for 8 categories: OTP/PIN/password requests, urgency or threats, payment requests, links, impersonation claims, personal-information requests, app install / remote access, too-good-to-be-true offers. Each highlight is an exact substring with its category and a short explanation. An optional LLM pass may **only reword the explanation** of spans the rules already found; it cannot add, move or remove a span, and reworded text containing numbers, links or evidence-deletion advice is discarded. | `/check` page, Analysis tab; `services/scamcheck/red_flags.py` |
 | **Lookalike-URL analyser** | Static, offline analysis of the URL **text only**: it never opens, resolves or fetches the URL. Checks: HTTPS, registered domain vs subdomains, deep subdomains, many hyphens, look-alike character substitutions and one-character typos of brand names, punycode / non-Latin look-alikes, brand names on domains that are not that brand's (small reference list), unusual TLDs, link shorteners, embedded credentials (`user@host`), raw IP hosts, percent-encoding, redirect parameters, sensitive path words, executable downloads. Returns the normalised URL, domain, registered domain, each indicator with a severity, a score, a risk level (low / medium / high) and an explanation. An unfamiliar domain alone is **never** an indicator, and a low result is described as "not a verdict". | `/check?mode=url`; links inside checked messages; `services/scamcheck/url_analyzer.py` |
 | **English / Hindi replies** | A language selector (English, हिन्दी). For Hindi, the LLM is told to write user-facing prose (chat reply, explanation, guidance, awareness, red-flag rewording) in Hindi while keeping JSON keys, enum values, source ids, identifiers (phone numbers, URLs, emails, UPI IDs, transaction IDs, amounts) and `[PLACEHOLDERS]` unchanged. Extraction, classification and the complaint draft stay in English so structured fields, citations, provenance and the complaint validator keep working. All output guards still run, and the evidence-deletion guard also covers Hindi phrasing. | reply-language selector on `/assistant`; `services/language.py` |
+| **Evidence integrity kit** | The user adds screenshots, statements or recordings in the Evidence tab. Each file is fingerprinted with SHA-256 **in the browser**; only the name, size, type, times and fingerprint are sent, never the file. Files can be linked to evidence-checklist items. The server builds a manifest with its own SHA-256 so changes to the manifest are detected, and a **Verify** step reports whether a file is byte-for-byte identical to one recorded (also after renaming). Generated complaints list the files and fingerprints as **Annexure A**. A matching fingerprint shows a file is unchanged since it was recorded; it does not prove the content is genuine, and no legal admissibility is claimed. | Evidence tab on `/assistant`; `services/evidence/manifest.py` |
 
 ## Architecture & tech stack
 
@@ -156,7 +157,7 @@ cd ../frontend && npm run typecheck && npm run build
 
 | Folder | What | Needs |
 |---|---|---|
-| `tests/unit` | red-flag rules (exact spans; LLM may only reword), URL analyser (safe and suspicious examples, no network access), language instructions and guards on Hindi output, structured-output repair/fallback, extraction & classification scenarios, identifier grounding, complaint placeholders, guidance/awareness filters, evidence-destruction guard, log redaction | nothing |
+| `tests/unit` | evidence manifest (deterministic digest, match / changed file / tampered manifest, complaint annexure without new placeholders), red-flag rules (exact spans; LLM may only reword), URL analyser (safe and suspicious examples, no network access), language instructions and guards on Hindi output, structured-output repair/fallback, extraction & classification scenarios, identifier grounding, complaint placeholders, guidance/awareness filters, evidence-destruction guard, log redaction | nothing |
 | `tests/integration` | Alembic migration on SQLite, KB ingestion, retrieval, dedupe, provenance, prompt-injection stripping, URL validation, re-embedding on model change, full API + SSE flow | nothing |
 | `tests/postgres` | pgvector extension, `vector(384)` column, HNSW index, stored vector norms, `<=>` search, embedding-mismatch guard, conversation persistence | PostgreSQL+pgvector test database (it is reset) |
 | `tests/real_provider` | semantic retrieval of a paraphrase; demo end to end with the real LLM: validated outputs, no invented facts, no unsupported URLs/helplines, no evidence-deletion advice, complaint identifiers | `.env` providers + `RUN_REAL_PROVIDER_TESTS=1` |
@@ -200,11 +201,14 @@ source_note`. Ingest everything with `python -m scripts.ingest_kb`. See
 | POST | `/api/v1/rag/search` |
 | POST | `/api/v1/check/message` — rule-based red flags (`{"text", "llm_explanations"?, "language"?}`) |
 | POST | `/api/v1/check/url` — offline URL analysis (`{"url"}`) |
+| POST | `/api/v1/evidence/manifest` — manifest of client-side fingerprints (`{"files": [...]}`) |
+| POST | `/api/v1/evidence/verify` — check a fingerprint against a manifest (`{"manifest", "sha256", "name"?}`) |
 | POST | `/api/v1/feedback` |
 | GET | `/api/v1/meta` (includes supported languages), `/health` |
 
 Chat messages accept `"language": "en" | "hi"`; results carry `language` and, for reported or checked
-messages, `red_flags`.
+messages, `red_flags`. Complaint requests (chat `generate_complaint` and `/incidents/{id}/complaint`) accept
+`evidence_files` for the annexure.
 
 Interactive docs at http://localhost:8000/docs. Errors share one shape: `{"error": {"code", "message", "details"}}`.
 
@@ -228,6 +232,10 @@ Interactive docs at http://localhost:8000/docs. Errors share one shape: `{"error
 - Red-flag and URL checks are fixed rules: they miss phrasings and tricks they don't list, can flag
   harmless messages that use the same words, and the brand list for URL checks is small. A clean result
   does not mean a message or link is safe. The URL analyser does not check reputation or blocklists.
+- The evidence kit keeps its file list in the page only (lost on reload; keep the downloaded manifest).
+  Files above 200 MB are not fingerprinted in the browser. The manifest fingerprint detects accidental or
+  careless edits to the manifest, not a deliberate forgery by someone who recomputes it; there is no
+  server-side signature or trusted timestamp.
 - It does not file complaints; users must submit through official channels.
 
 ## Future scope

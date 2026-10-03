@@ -78,6 +78,7 @@ or pipeline stages:
 |---|---|---|---|
 | Lookalike-URL analyser (rule-based, offline) | `services/scamcheck/url_analyzer.py`, `POST /api/v1/check/url` | `/check?mode=url` | `tests/unit/test_url_analyzer.py` |
 | Red-flag highlighting (rule-based; LLM may only reword explanations) | `services/scamcheck/red_flags.py`, `POST /api/v1/check/message`, `red_flags` on chat results | `/check`, Analysis tab | `tests/unit/test_red_flags.py`, `tests/integration/test_scamcheck_api.py` |
+| Evidence integrity kit (rule-based, client-side hashing) | `services/evidence/manifest.py`, `POST /api/v1/evidence/manifest` and `/verify`, `evidence_files` on complaint requests → Annexure A | Evidence tab kit (`EvidenceKit.tsx`, `lib/evidence.ts`) | `tests/unit/test_evidence_manifest.py`, `tests/integration/test_evidence_api.py` |
 | English / Hindi replies | `services/language.py`, `language` on chat messages, Hindi evidence-deletion guard, localised fallback replies | reply-language selector | `tests/unit/test_language.py` |
 
 Tamil was left out for now. Not done: measuring the rules or the Hindi output against a labelled dataset.

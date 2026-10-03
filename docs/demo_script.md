@@ -60,6 +60,12 @@ the host). The full demo below was run through the containers on fresh volumes.
   placeholders. On Groq's free tier this turn can take a couple of minutes (rate limits); if the model
   is unavailable the fixed fallback reply is shown in Hindi.
 
+- **Evidence integrity kit** (Evidence tab): add a screenshot and a PDF; each gets a SHA-256 fingerprint
+  computed in the browser (point out that nothing is uploaded). Link one to a checklist item, then
+  **Create & download manifest**. Under *Verify a file*, re-select the same file under another name
+  (match, rename noted) and an edited copy (no match). Generate the complaint: the files and
+  fingerprints appear as **Annexure A**. Say what it does not prove: that the content is genuine.
+
 ## 9. Engineering talking points
 - Pipeline split into services (`extraction → classification → retrieval → generation → persistence`), prompts in `services/ai/prompts/`.
 - Pydantic-validated structured outputs with one repair retry and safe fallbacks (tests feed malformed JSON).
