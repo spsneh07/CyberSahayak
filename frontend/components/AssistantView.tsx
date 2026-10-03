@@ -132,7 +132,7 @@ export function AssistantView() {
   const lastResult = [...messages].reverse().find((m) => m.result)?.result;
 
   return (
-    <div className="mx-auto grid max-w-7xl gap-4 px-4 py-4 lg:h-[calc(100vh-61px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
+    <div className="mx-auto grid max-w-7xl gap-4 px-4 py-4 lg:h-[calc(100vh-110px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
       {/* Chat column */}
       <section className="flex min-h-[70vh] flex-col lg:min-h-0" aria-label="Conversation">
         <div className="mb-3"><QuickActionGrid compact onPick={pick} disabled={busy} /></div>

@@ -91,7 +91,7 @@ export function EvidenceChecklist({ items }: { items: EvidenceItem[] }) {
         {items.map((it, i) => (
           <li key={i}>
             <label className="flex cursor-pointer gap-3 rounded-lg border border-ink-700 bg-ink-800/60 p-2.5 hover:border-ink-600">
-              <input type="checkbox" className="mt-1 h-4 w-4 accent-cyan-400" checked={!!checked[i]}
+              <input type="checkbox" className="mt-1 h-4 w-4 accent-[#0b5cad]" checked={!!checked[i]}
                 onChange={(e) => setChecked((c) => ({ ...c, [i]: e.target.checked }))} />
               <span className="flex-1">
                 <span className={`text-sm ${checked[i] ? "text-slate-400 line-through" : "text-white"}`}>{it.item}</span>

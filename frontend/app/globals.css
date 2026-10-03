@@ -3,37 +3,40 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
-  @apply bg-ink-950 text-slate-200 antialiased;
-  background-image:
-    radial-gradient(circle at 15% -10%, rgba(34, 211, 238, 0.08), transparent 40%),
-    linear-gradient(rgba(148, 163, 184, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148, 163, 184, 0.035) 1px, transparent 1px);
-  background-size: auto, 32px 32px, 32px 32px;
+  @apply bg-ink-950 font-sans text-slate-200 antialiased;
 }
 
 @layer components {
   .panel {
-    @apply rounded-xl border border-ink-600/60 bg-ink-900/80 backdrop-blur;
+    @apply rounded-lg border border-ink-700 bg-ink-900 shadow-sm;
   }
   .panel-title {
-    @apply flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-signal;
+    @apply flex items-center gap-2 border-l-4 border-signal pl-2 text-sm font-semibold uppercase tracking-wide text-white;
   }
   .chip {
-    @apply inline-flex items-center rounded-md border border-ink-600 bg-ink-800 px-2 py-0.5 font-mono text-xs text-slate-300;
+    @apply inline-flex items-center rounded border border-ink-600 bg-ink-800 px-2 py-0.5 text-xs font-medium text-slate-300;
   }
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition
-      focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-semibold transition
+      focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#ffbf47]
       disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn-primary {
-    @apply btn bg-signal text-ink-950 hover:bg-cyan-300;
+    @apply btn bg-signal text-paper shadow-sm hover:bg-signal-dim;
   }
   .btn-ghost {
-    @apply btn border border-ink-600 bg-ink-800 text-slate-200 hover:border-signal/60 hover:text-white;
+    @apply btn border border-ink-600 bg-paper text-slate-200 hover:border-signal hover:text-signal;
+  }
+  /* Visible keyboard focus everywhere (yellow ring, as on many public-service sites). */
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [tabindex]:focus-visible {
+    @apply outline outline-[3px] outline-offset-2 outline-[#ffbf47];
   }
 }

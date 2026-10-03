@@ -22,11 +22,20 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10">
+    <div className="mx-auto max-w-7xl px-4 py-8">
+      <section aria-labelledby="urgent-title" className="mb-8 rounded-lg border-l-8 border-danger bg-paper p-4 shadow-sm ring-1 ring-ink-700">
+        <h2 id="urgent-title" className="text-lg font-bold text-danger">Lost money to a fraud? Act immediately.</h2>
+        <p className="mt-1 text-sm text-slate-300">
+          Call the national cybercrime helpline <strong className="text-white">1930</strong> or report on{" "}
+          <a href="https://cybercrime.gov.in" target="_blank" rel="noreferrer" className="font-semibold text-signal underline">cybercrime.gov.in</a>{" "}
+          as soon as possible, and inform your bank through its official channels. Reporting quickly gives the best chance of
+          stopping the money. Then use this assistant to organise your evidence and draft your complaint.
+        </p>
+      </section>
       <section className="grid gap-8 lg:grid-cols-[1.3fr_1fr] lg:items-center">
         <div>
-          <p className="font-mono text-xs uppercase tracking-[0.25em] text-signal">Cyber crime help desk</p>
-          <h1 className="mt-3 text-3xl font-bold leading-tight text-white sm:text-5xl">
+          <p className="text-sm font-semibold uppercase tracking-wider text-signal">Cyber crime help desk</p>
+          <h1 className="mt-2 text-3xl font-bold leading-tight text-white sm:text-4xl">
             Scammed, hacked or unsure? <span className="text-signal">Get clear next steps.</span>
           </h1>
           <p className="mt-4 max-w-xl text-slate-300">
