@@ -74,7 +74,7 @@ def guidance(incident_id: str, p: Pipeline = Depends(get_pipeline)) -> GuidanceO
 
 @router.post("/{incident_id}/complaint", response_model=ComplaintDraftOut)
 def complaint(incident_id: str, body: ComplaintRequest | None = None, p: Pipeline = Depends(get_pipeline)) -> ComplaintDraftOut:
-    return p.complaint_for(_get(p, incident_id), body.complainant if body else None)
+    return p.complaint_for(_get(p, incident_id), body.complainant if body else None, body.evidence_files if body else None)
 
 
 @router.post("/{incident_id}/awareness", response_model=AwarenessOut)

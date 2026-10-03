@@ -14,6 +14,7 @@ from app.services.awareness.generator import AwarenessGenerator
 from app.services.classification.classifier import IncidentClassifier
 from app.services.classification.taxonomy import label
 from app.services.complaint.generator import ComplaintGenerator
+from app.services.evidence.manifest import EvidenceFile
 from app.services.guidance.advisor import Advisor
 from app.services.incident.extractor import IncidentExtractor
 from app.services.rag.retriever import Retriever
@@ -71,9 +72,10 @@ class Pipeline:
         self.incidents.replace_evidence(incident, guidance.evidence_checklist)
         return explanation, guidance, sources
 
-    def complaint_for(self, incident: Incident, complainant: ComplainantDetails | None = None) -> ComplaintDraftOut:
+    def complaint_for(self, incident: Incident, complainant: ComplainantDetails | None = None,
+                      evidence_files: list[EvidenceFile] | None = None) -> ComplaintDraftOut:
         data, cls = self.load(incident)
-        subject, body, placeholders, notes = self.complaints.generate(data, cls, complainant)
+        subject, body, placeholders, notes = self.complaints.generate(data, cls, complainant, evidence_files)
         row = self.incidents.add_complaint(incident, subject, body, placeholders)
         return ComplaintDraftOut(id=row.id, incident_id=incident.id, subject=subject, body=body,
                                  placeholders=placeholders, validation_notes=notes)

@@ -78,7 +78,7 @@ class Orchestrator:
             track("generating")
             result.incident_id = incident.id
             result.incident, result.classification = self.p.load(incident)
-            result.complaint = self.p.complaint_for(incident, msg.complainant)
+            result.complaint = self.p.complaint_for(incident, msg.complainant, msg.evidence_files)
             result.reply = (f"I've prepared an editable complaint draft. Fill in the {len(result.complaint.placeholders)} "
                             "bracketed placeholders before submitting — I have not guessed any of them.")
 

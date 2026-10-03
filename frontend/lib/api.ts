@@ -1,4 +1,7 @@
-import type { AssistantResult, ComplainantDetails, Intent, Language, Meta, RedFlagReport, UrlAnalysis } from "./types";
+import type {
+  AssistantResult, ComplainantDetails, EvidenceFile, EvidenceManifest, Intent, Language, Meta, RedFlagReport, UrlAnalysis,
+  VerifyResult,
+} from "./types";
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -42,9 +45,16 @@ export const checkMessage = (text: string, llmExplanations = false, language: La
 export const checkUrl = (url: string) =>
   request<UrlAnalysis>("/api/v1/check/url", { method: "POST", body: JSON.stringify({ url }) });
 
+export const createManifest = (files: EvidenceFile[]) =>
+  request<EvidenceManifest>("/api/v1/evidence/manifest", { method: "POST", body: JSON.stringify({ files }) });
+
+export const verifyEvidence = (manifest: EvidenceManifest, sha256: string, name?: string) =>
+  request<VerifyResult>("/api/v1/evidence/verify", { method: "POST", body: JSON.stringify({ manifest, sha256, name }) });
+
 export interface SendOptions {
   action?: Intent;
   language?: Language;
+  evidenceFiles?: EvidenceFile[];
   complainant?: ComplainantDetails;
   onStage?: (stage: string) => void;
   signal?: AbortSignal;
@@ -54,12 +64,12 @@ export interface SendOptions {
 export async function sendMessageStream(
   conversationId: string,
   content: string,
-  { action, complainant, language, onStage, signal }: SendOptions = {},
+  { action, complainant, language, evidenceFiles, onStage, signal }: SendOptions = {},
 ): Promise<AssistantResult> {
   const res = await fetch(`${API_URL}/api/v1/conversations/${conversationId}/messages/stream`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ content, action, complainant, language }),
+    body: JSON.stringify({ content, action, complainant, language, evidence_files: evidenceFiles }),
     signal,
   });
   if (!res.ok || !res.body) {

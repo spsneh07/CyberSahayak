@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field, field_validator
 from app.schemas.classification import ClassificationResult
 from app.schemas.guidance import Awareness, Citation, ComplaintDraftOut, Explanation, Guidance
 from app.schemas.incident import ComplainantDetails, IncidentData
+from app.services.evidence.manifest import EvidenceFile
 from app.services.language import Language
 from app.services.scamcheck.red_flags import RedFlagReport
 
@@ -29,6 +30,8 @@ class MessageIn(BaseModel):
     action: Intent | None = Field(None, description="Explicit quick action; skips intent detection")
     complainant: ComplainantDetails | None = None
     language: Language = Field("en", description="Language for user-facing replies (en, hi)")
+    evidence_files: list[EvidenceFile] = Field(default_factory=list, max_length=100,
+                                               description="Fingerprinted evidence metadata for the complaint annexure")
 
     @field_validator("content")
     @classmethod

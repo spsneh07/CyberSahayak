@@ -2,6 +2,8 @@ from enum import Enum
 
 from pydantic import BaseModel, Field, field_validator
 
+from app.services.evidence.manifest import EvidenceFile
+
 
 class FactSource(str, Enum):
     user_provided = "user_provided"  # stated by the user
@@ -57,3 +59,4 @@ class ComplainantDetails(BaseModel):
 
 class ComplaintRequest(BaseModel):
     complainant: ComplainantDetails | None = None
+    evidence_files: list[EvidenceFile] = Field(default_factory=list, max_length=100)

@@ -6,6 +6,7 @@ import {
   AwarenessPanel, EvidenceChecklist, ExplanationPanel, GuidancePanel, SourcesPanel,
 } from "@/components/AnalysisPanels";
 import { ComplaintEditor } from "@/components/ComplaintEditor";
+import { EvidenceKit } from "@/components/EvidenceKit";
 import { IncidentSummary } from "@/components/IncidentSummary";
 import { LanguageSelect, useLanguage } from "@/components/LanguageSelect";
 import { Markdown } from "@/components/Markdown";
@@ -14,7 +15,7 @@ import { RedFlagSummary } from "@/components/ScamCheck";
 import { StageProgress } from "@/components/StageProgress";
 import { createConversation, sendMessageStream } from "@/lib/api";
 import { categoryLabel } from "@/lib/labels";
-import type { AssistantResult, ChatMessage, ComplainantDetails, Intent } from "@/lib/types";
+import type { AssistantResult, ChatMessage, ComplainantDetails, EvidenceFile, Intent } from "@/lib/types";
 
 type Tab = "analysis" | "evidence" | "sources" | "complaint" | "awareness";
 
@@ -40,6 +41,7 @@ export function AssistantView() {
   const [tab, setTab] = useState<Tab>("analysis");
   const [complainant, setComplainant] = useState<ComplainantDetails>({});
   const [language, setLanguage] = useLanguage();
+  const [evidenceFiles, setEvidenceFiles] = useState<EvidenceFile[]>([]);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const startedRef = useRef(false);
@@ -87,6 +89,7 @@ export function AssistantView() {
       const result = await sendMessageStream(cid, content, {
         action,
         language,
+        evidenceFiles: action === "generate_complaint" && evidenceFiles.length ? evidenceFiles : undefined,
         complainant: action === "generate_complaint" && hasDetails ? complainant : undefined,
         onStage: (s) => setStages((prev) => [...prev, s]),
       });
@@ -121,7 +124,7 @@ export function AssistantView() {
 
   const tabs: { id: Tab; label: string; ready: boolean }[] = [
     { id: "analysis", label: "Analysis", ready: !!insights.incident },
-    { id: "evidence", label: "Evidence", ready: !!insights.guidance },
+    { id: "evidence", label: `Evidence${evidenceFiles.length ? ` (${evidenceFiles.length} files)` : ""}`, ready: !!insights.guidance },
     { id: "sources", label: `Sources${insights.sources.length ? ` (${insights.sources.length})` : ""}`, ready: insights.sources.length > 0 },
     { id: "complaint", label: "Complaint", ready: !!insights.complaint },
     { id: "awareness", label: "Awareness", ready: !!insights.awareness },
@@ -217,9 +220,14 @@ export function AssistantView() {
             </>
           ) : <Empty text="Describe an incident to see its structured summary, classification and recommended actions." />)}
 
-          {tab === "evidence" && (insights.guidance
-            ? <EvidenceChecklist key={insights.incident?.description} items={insights.guidance.evidence_checklist} />
-            : <Empty text="The evidence checklist appears after an incident is analysed." />)}
+          {tab === "evidence" && (
+            <>
+              {insights.guidance
+                ? <EvidenceChecklist key={insights.incident?.description} items={insights.guidance.evidence_checklist} />
+                : <Empty text="The evidence checklist appears after an incident is analysed." />}
+              <EvidenceKit files={evidenceFiles} onChange={setEvidenceFiles} checklist={insights.guidance?.evidence_checklist ?? []} />
+            </>
+          )}
 
           {tab === "sources" && (insights.sources.length
             ? <SourcesPanel sources={insights.sources} />
@@ -242,6 +250,11 @@ export function AssistantView() {
                   onClick={() => void send("Please draft a formal complaint for my incident.", "generate_complaint")}>
                   {insights.complaint ? "Regenerate draft" : "Generate draft"}
                 </button>
+                <p className="mt-2 text-xs text-slate-500">
+                  {evidenceFiles.length
+                    ? `${evidenceFiles.length} fingerprinted evidence file(s) will be listed as Annexure A.`
+                    : "Tip: add evidence files in the Evidence tab to list them, with fingerprints, as Annexure A."}
+                </p>
               </details>
               {insights.complaint ? <ComplaintEditor draft={insights.complaint} />
                 : <Empty text={insights.incident ? "Generate a draft above." : "Report an incident first, then generate a complaint draft."} />}

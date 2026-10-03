@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from app.api.v1 import conversations, incidents, rag, scamcheck
+from app.api.v1 import conversations, evidence, incidents, rag, scamcheck
 from app.core.config import get_settings
 from app.core.db import get_db
 from app.core.errors import register_error_handlers
@@ -28,6 +28,7 @@ api.include_router(conversations.feedback_router)
 api.include_router(incidents.router)
 api.include_router(rag.router)
 api.include_router(scamcheck.router)
+api.include_router(evidence.router)
 
 
 @api.get("/meta", tags=["meta"])

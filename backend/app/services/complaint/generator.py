@@ -10,6 +10,7 @@ from app.services.ai.prompts import complaint as prompt
 from app.services.ai.structured import generate_structured
 from app.services.classification.taxonomy import label
 from app.services.complaint.validator import validate_narrative
+from app.services.evidence.manifest import EvidenceFile, annexure
 from app.services.incident.identifiers import extract_identifiers, normalize
 
 PLACEHOLDER_RE = re.compile(r"\[[A-Z][A-Z0-9 /'’&,.-]{1,80}\]")
@@ -45,7 +46,8 @@ class ComplaintGenerator:
         self.llm = llm
 
     def generate(self, incident: IncidentData, cls: ClassificationResult | None,
-                 complainant: ComplainantDetails | None = None) -> tuple[str, str, list[str], list[str]]:
+                 complainant: ComplainantDetails | None = None,
+                 evidence_files: list[EvidenceFile] | None = None) -> tuple[str, str, list[str], list[str]]:
         """Return (subject, body, placeholders, validation_notes)."""
         c = complainant or ComplainantDetails()
         category = label(cls.category) if cls and cls.category != "unknown" else (incident.incident_type or "[INCIDENT TYPE]")
@@ -71,7 +73,10 @@ class ComplaintGenerator:
             loss = "[AMOUNT LOST, IF ANY]"
 
         subject = f"Complaint regarding {category} incident" + (f" via {incident.platform}" if incident.platform else "")
-        evidence = "\n".join(f"  {i}. {e}" for i, e in enumerate(incident.evidence_available, 1)) or "  1. [LIST OF EVIDENCE, E.G. SCREENSHOTS, SMS, BANK STATEMENT]"
+        evidence_lines = list(incident.evidence_available)
+        if evidence_files:
+            evidence_lines.append(f"{len(evidence_files)} digital file(s) with SHA-256 fingerprints, listed in Annexure A")
+        evidence = "\n".join(f"  {i}. {e}" for i, e in enumerate(evidence_lines, 1)) or "  1. [LIST OF EVIDENCE, E.G. SCREENSHOTS, SMS, BANK STATEMENT]"
         actions = "\n".join(f"  - {a}" for a in incident.actions_taken) or "  - [ACTIONS ALREADY TAKEN, E.G. BANK INFORMED ON DATE, REFERENCE NO.]"
         req = "\n".join(f"  {i}. {r}" for i, r in enumerate(requests, 1))
 
@@ -126,5 +131,7 @@ Yours faithfully,
 {_val(c.name, 'FULL NAME')}
 [SIGNATURE]
 """
+        if evidence_files:
+            body += "\n" + annexure(evidence_files) + "\n"
         placeholders = sorted(set(PLACEHOLDER_RE.findall(body)))
         return subject, body, placeholders, notes

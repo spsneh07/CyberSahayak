@@ -113,6 +113,31 @@ export interface AssistantResult {
 
 export type Language = "en" | "hi";
 
+export interface EvidenceFile {
+  name: string;
+  size: number;
+  media_type: string;
+  sha256: string;
+  recorded_at: string;
+  last_modified: string | null;
+  checklist_item: string | null;
+}
+
+export interface EvidenceManifest {
+  algorithm: string;
+  files: EvidenceFile[];
+  generated_at: string;
+  manifest_sha256: string;
+  note: string;
+}
+
+export interface VerifyResult {
+  manifest_intact: boolean;
+  match: boolean;
+  matched_file: EvidenceFile | null;
+  message: string;
+}
+
 export interface RedFlagSpan {
   start: number;
   end: number;
