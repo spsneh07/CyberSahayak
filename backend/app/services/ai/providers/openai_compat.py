@@ -61,7 +61,17 @@ class OpenAICompatibleLLM(LLMProvider):
         try:
             resp = post_with_retry(self.client, f"{self.base_url}/chat/completions", body)
             resp.raise_for_status()
-            return resp.json()["choices"][0]["message"]["content"] or ""
+            data = resp.json()
+            if "usage" in data:
+                usage = data["usage"]
+                log.info(
+                    "%s token usage - prompt: %s, completion: %s, total: %s",
+                    task,
+                    usage.get("prompt_tokens", 0),
+                    usage.get("completion_tokens", 0),
+                    usage.get("total_tokens", 0),
+                )
+            return data["choices"][0]["message"]["content"] or ""
         except (httpx.HTTPError, KeyError, IndexError, ValueError) as exc:
             raise LLMError(f"{task}: LLM request failed ({describe_error(exc)})") from exc
 
