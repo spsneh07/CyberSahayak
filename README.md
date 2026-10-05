@@ -1,7 +1,7 @@
 # AI Cyber Crime Complaint & Awareness Assistant (CyberSahayak)
 
 B.Tech 5th-semester course project — 21CSE306P Applied Generative AI (2026-27).
-Team: Ashutosh Bawri, Nikshit R, Riya Maheshwari, Sneh Prasad.
+Team: Kaavya Gupta, Nikshit R, Riya Maheshwari, Sneh Prasad.
 
 > This assistant provides educational cybersecurity guidance and complaint-drafting assistance. It is not a
 > substitute for law enforcement, legal advice, or professional cybersecurity investigation.
