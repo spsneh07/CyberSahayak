@@ -43,18 +43,18 @@ only the language the LLM writes in.
 | Frontend | Next.js 15 (App Router), React 19, TypeScript (strict), Tailwind CSS |
 | Backend | Python 3.12+, FastAPI, Pydantic v2, SQLAlchemy 2, Alembic |
 | Database | PostgreSQL 16 + pgvector (HNSW cosine index) |
-| AI | Provider abstraction: OpenAI-compatible (OpenAI/Groq/OpenRouter/Ollama), Anthropic, offline mock; embeddings: OpenAI-compatible or local hash |
+| AI | Provider abstraction: OpenAI-compatible (OpenAI/Groq/OpenRouter/Ollama), Anthropic, offline mock; embeddings: local sentence-transformers (`all-MiniLM-L6-v2`), OpenAI-compatible, or offline hash |
 
 Details: [docs/architecture.md](docs/architecture.md), [docs/architecture_decisions.md](docs/architecture_decisions.md), [docs/rag.md](docs/rag.md).
 
 ```
 backend/app/
-  api/v1/          conversations (+SSE stream), incidents, rag, feedback
+  api/v1/          conversations (+SSE stream, feedback), incidents, rag, scamcheck, evidence
   core/            config, db, redacting logger, error handlers
   models/          SQLAlchemy tables      repositories/  DB access
   schemas/         Pydantic API + LLM output schemas
   services/ai/     providers, structured output helper, prompts/
-  services/{incident,classification,rag,guidance,complaint,awareness,conversation}
+  services/{incident,classification,rag,guidance,complaint,awareness,conversation,scamcheck,evidence}, language.py
 backend/alembic/   migrations             backend/tests/   pytest suite
 backend/evaluation/ fictional dataset + eval runner
 frontend/          Next.js app            knowledge_base/  RAG documents

@@ -16,7 +16,8 @@ Docker-free while production uses real pgvector.
 Implementations: `mock`, `openai` (any OpenAI-compatible endpoint: OpenAI, Groq,
 OpenRouter, Ollama, LM Studio), `anthropic`. No vendor SDKs → fewer dependencies.
 Embedding providers: `hash` (deterministic local feature-hashing; offline,
-lexical-quality), `openai`-compatible. Vector dimension is fixed by
+lexical-quality), `local` (sentence-transformers `all-MiniLM-L6-v2` on CPU, semantic),
+`openai`-compatible. Vector dimension is fixed by
 `EMBEDDING_DIM` and the migration.
 
 ### ADR-4 Structured outputs validated by Pydantic, with one repair retry

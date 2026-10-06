@@ -47,7 +47,7 @@ FastAPI  /api/v1   ──►  ConversationOrchestrator
 ## Request flow (chat message)
 
 1. Persist user message.
-2. Intent: `report_incident | check_message | question | generate_complaint | evidence | tips | smalltalk`.
+2. Intent (8 fixed labels): `report_incident | provide_details | check_message | question | generate_complaint | evidence_checklist | safety_tips | smalltalk`.
 3. Extraction → merge with previous incident state of the conversation (new facts
    only, never overwrite user facts with inferences) → validate with Pydantic.
 4. Classification against fixed taxonomy (confidence, reasoning, alternatives;
