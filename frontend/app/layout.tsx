@@ -3,7 +3,7 @@ import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Cybershield AI — Cyber Crime Complaint & Awareness Assistant",
+  title: "CyberShield AI — Cyber Crime Complaint & Awareness Assistant",
   description: "Understand scams, preserve evidence, draft complaints and learn to stay safe online.",
 };
 
@@ -32,7 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <path d="M24 32.5 29.5 38 40.5 26.5" fill="none" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               <span className="leading-tight">
-                <span className="block text-lg font-bold">Cybershield AI</span>
+                <span className="block text-lg font-bold">CyberShield AI</span>
                 <span className="block text-xs text-slate-400">Cyber crime help, evidence &amp; complaint assistant</span>
               </span>
             </Link>
@@ -49,7 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <footer className="mt-10 bg-navy text-[13px] text-[#c9d6ea]">
           <div className="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:grid-cols-3">
             <div>
-              <p className="font-semibold text-paper">Cybershield AI</p>
+              <p className="font-semibold text-paper">CyberShield AI</p>
               <p className="mt-1">An educational assistant built as a B.Tech Applied GenAI course project. It does not file complaints
                 and is not affiliated with any government body.</p>
             </div>

@@ -18,7 +18,7 @@ import httpx
 
 from app.core.config import get_settings
 
-UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) CybershieldAI-KB-fetch"}
+UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) CyberShieldAI-KB-fetch"}
 
 
 def html_to_text(raw: str) -> str:
