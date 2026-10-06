@@ -1,4 +1,4 @@
-# AI Cyber Crime Complaint & Awareness Assistant (CyberSahayak)
+# AI Cyber Crime Complaint & Awareness Assistant (Cybershield AI)
 
 B.Tech 5th-semester course project — 21CSE306P Applied Generative AI (2026-27).
 Team: Kaavya Gupta, Nikshit R, Riya Maheshwari, Sneh Prasad.

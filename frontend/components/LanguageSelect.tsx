@@ -8,7 +8,7 @@ export const LANGUAGES: { id: Language; label: string }[] = [
   { id: "hi", label: "हिन्दी (Hindi)" },
 ];
 
-const KEY = "cybersahayak.language";
+const KEY = "cybershield-ai.language";
 
 /** Selected reply language, remembered in this browser only. */
 export function useLanguage(): [Language, (l: Language) => void] {
